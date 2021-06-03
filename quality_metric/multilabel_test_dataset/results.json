@@ -1,0 +1,136 @@
+{
+  "binary_relevance": {
+    "RandomForestClassifier": {
+      "f1_score": 0.8442211055276382,
+      "hamming_loss": 0.20666666666666667,
+      "jaccard_score": 0.7304347826086957,
+      "accuracy_score": 0.475,
+      "recall_score": 0.8593350383631714,
+      "precision_score": 0.8296296296296296,
+      "training_time": 0.4452
+    },
+    "GradientBoostingClassifier": {
+      "f1_score": 0.8867924528301887,
+      "hamming_loss": 0.16,
+      "jaccard_score": 0.7966101694915254,
+      "accuracy_score": 0.535,
+      "recall_score": 0.9616368286445013,
+      "precision_score": 0.8227571115973742,
+      "training_time": 0.2151
+    },
+    "AdaBoostClassifier": {
+      "f1_score": 0.8770685579196218,
+      "hamming_loss": 0.17333333333333334,
+      "jaccard_score": 0.7810526315789473,
+      "accuracy_score": 0.51,
+      "recall_score": 0.948849104859335,
+      "precision_score": 0.8153846153846154,
+      "training_time": 0.1751
+    },
+    "ExtraTreesClassifier": {
+      "f1_score": 0.8259740259740258,
+      "hamming_loss": 0.22333333333333333,
+      "jaccard_score": 0.7035398230088495,
+      "accuracy_score": 0.435,
+      "recall_score": 0.8132992327365729,
+      "precision_score": 0.8390501319261213,
+      "training_time": 0.3634
+    }
+  },
+  "label_powerset": {
+    "RandomForestClassifier": {
+      "f1_score": 0.8376288659793815,
+      "hamming_loss": 0.21,
+      "jaccard_score": 0.720620842572062,
+      "accuracy_score": 0.485,
+      "recall_score": 0.8312020460358056,
+      "precision_score": 0.8441558441558441,
+      "training_time": 0.1682
+    },
+    "GradientBoostingClassifier": {
+      "f1_score": 0.8489388264669163,
+      "hamming_loss": 0.20166666666666666,
+      "jaccard_score": 0.737527114967462,
+      "accuracy_score": 0.51,
+      "recall_score": 0.8695652173913043,
+      "precision_score": 0.8292682926829268,
+      "training_time": 0.6332
+    },
+    "AdaBoostClassifier": {
+      "f1_score": 0.8506900878293602,
+      "hamming_loss": 0.19833333333333333,
+      "jaccard_score": 0.740174672489083,
+      "accuracy_score": 0.51,
+      "recall_score": 0.8670076726342711,
+      "precision_score": 0.8349753694581281,
+      "training_time": 0.0645
+    },
+    "ExtraTreesClassifier": {
+      "f1_score": 0.8298969072164949,
+      "hamming_loss": 0.22,
+      "jaccard_score": 0.7092511013215859,
+      "accuracy_score": 0.475,
+      "recall_score": 0.8235294117647058,
+      "precision_score": 0.8363636363636363,
+      "training_time": 0.1495
+    }
+  },
+  "classifier_chain": {
+    "RandomForestClassifier": {
+      "f1_score": 0.8375634517766498,
+      "hamming_loss": 0.21333333333333335,
+      "jaccard_score": 0.7205240174672489,
+      "accuracy_score": 0.48,
+      "recall_score": 0.8439897698209718,
+      "precision_score": 0.8312342569269522,
+      "training_time": 0.4219
+    },
+    "GradientBoostingClassifier": {
+      "f1_score": 0.8854415274463007,
+      "hamming_loss": 0.16,
+      "jaccard_score": 0.7944325481798715,
+      "accuracy_score": 0.565,
+      "recall_score": 0.948849104859335,
+      "precision_score": 0.8299776286353467,
+      "training_time": 0.2173
+    },
+    "AdaBoostClassifier": {
+      "f1_score": 0.8752997601918465,
+      "hamming_loss": 0.17333333333333334,
+      "jaccard_score": 0.7782515991471215,
+      "accuracy_score": 0.54,
+      "recall_score": 0.9335038363171355,
+      "precision_score": 0.8239277652370203,
+      "training_time": 0.1822
+    },
+    "ExtraTreesClassifier": {
+      "f1_score": 0.8172323759791124,
+      "hamming_loss": 0.23333333333333334,
+      "jaccard_score": 0.6909492273730684,
+      "accuracy_score": 0.435,
+      "recall_score": 0.8005115089514067,
+      "precision_score": 0.8346666666666667,
+      "training_time": 0.3918
+    }
+  },
+  "ml_knn": {
+    "ml_knn": {
+      "f1_score": 0.8713592233009709,
+      "hamming_loss": 0.17666666666666667,
+      "jaccard_score": 0.7720430107526882,
+      "accuracy_score": 0.515,
+      "recall_score": 0.9181585677749361,
+      "precision_score": 0.8290993071593533,
+      "training_time": 5.3764
+    },
+    "br_knn": {
+      "f1_score": 0.8589420654911839,
+      "hamming_loss": 0.18666666666666668,
+      "jaccard_score": 0.7527593818984547,
+      "accuracy_score": 0.515,
+      "recall_score": 0.8721227621483376,
+      "precision_score": 0.8461538461538461,
+      "training_time": 0.2204
+    }
+  }
+}
