@@ -137,7 +137,7 @@ def _main(X, y, dir: str):
 
     print(results)
 
-    with open("{}/results_test.json".format(dir), "w") as file:
+    with open("{}/results.json".format(dir), "w") as file:
         json.dump(results, file)
 
 

@@ -259,21 +259,21 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    dataset_config = {
-        "n_samples": 10000,
-        "n_features": 21,
-        "n_classes": 12,
-        "n_labels": 4,
-        "allow_unlabeled": False
-    }
-
     # dataset_config = {
-    #     "n_samples": 1000,
-    #     "n_features": 2,
-    #     "n_classes": 3,
-    #     "n_labels": 2,
+    #     "n_samples": 10000,
+    #     "n_features": 21,
+    #     "n_classes": 12,
+    #     "n_labels": 4,
     #     "allow_unlabeled": False
     # }
+
+    dataset_config = {
+        "n_samples": 1000,
+        "n_features": 2,
+        "n_classes": 3,
+        "n_labels": 2,
+        "allow_unlabeled": False
+    }
 
     main(args.directory, dataset_config)
 
