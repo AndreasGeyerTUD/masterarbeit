@@ -4,6 +4,4 @@ matplotlib~=3.4.2
 pandas~=1.2.4
 scikit-multilearn~=0.2.0
 tqdm~=4.61.0
-mayavi~=4.7.3
 scipy~=1.6.3
-PyQt5~=5.15.4

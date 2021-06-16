@@ -1,7 +1,7 @@
-from mayavi import mlab
 import argparse
 from pathlib import Path
 
+import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.datasets import make_classification
 from tqdm import tqdm
@@ -12,23 +12,28 @@ def _round(matrix: np.array, res: int):
     return (np.round(matrix, len(str(res))) * res).astype(int)
 
 
-def heatmap_plot(data, title: str, file_path: str, res: int):
-    xyz = np.vstack([data[:, 0], data[:, 1], data[:, 2]])
-    kde = stats.gaussian_kde(xyz)
-    density = kde(xyz)
+def heatmap_plot(data, file_path: str):
+    x, y, z = data[:, 0], data[:, 1], data[:, 2]
+    xyz = np.vstack([x, y, z])
+    density = stats.gaussian_kde(xyz)(xyz)
 
-    figure = mlab.figure('DensityPlot', bgcolor=(1, 1, 1), fgcolor=(0, 0, 0))
-    mlab.title(title)
-    pts = mlab.points3d(data[:, 0], data[:, 1], data[:, 2], density)
-    mlab.axes(color=(0, 0, 0), ranges=[0, res, 0, res, 0, res])
+    points_size = ((density - density.min(0)) / density.ptp(0)) * 30
 
-    for i in range(1, 4):
-        for j in range(1, 4):
-            mlab.view(i * 45, j * 45, 40)
-            for file_type in ["png", "jpg", "tiff", "bmp"]:
-                mlab.savefig("{}_{}_{}.{}".format(file_path, i * 45, j * 45, file_type), figure=figure)
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    ax.scatter(x, y, z, c=density, s=points_size,  cmap="RdYlGn_r")
 
-    mlab.close()
+    for i in range(1, 16):
+        if i % 2 == 0:
+            continue
+        for j in range(1, 16):
+            if j % 4 == 0:
+                continue
+            ax.view_init(i * 22.5, j * 22.5)
+            plt.draw()
+            plt.savefig("{}_{}_{}.pdf".format(file_path, i * 22.5, j * 22.5), format="pdf")
+
+    plt.close()
 
 
 def _main(save_dir: str):
@@ -42,16 +47,14 @@ def _main(save_dir: str):
             x, y = make_classification(n_samples=res * 10, n_features=3, n_informative=3, n_redundant=0,
                                        n_clusters_per_class=1, random_state=i)
 
-            x_round = _round((x - x.min(0)) / x.ptp(0), res)
-
-            data = x_round
+            data = _round((x - x.min(0)) / x.ptp(0), res)
 
             if whole_data is None:
                 whole_data = data
             else:
                 whole_data = np.concatenate([whole_data, data], axis=0)
 
-        heatmap_plot(whole_data, "Points Distribution - DensityPlot", "{}/density_plot".format(cwd), res)
+        heatmap_plot(whole_data, "{}/density_plot".format(cwd))
 
 
 if __name__ == "__main__":
