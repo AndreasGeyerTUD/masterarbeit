@@ -3,9 +3,9 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
+from scipy import stats
 from sklearn.datasets import make_classification
 from tqdm import tqdm
-from scipy import stats
 
 
 def _round(matrix: np.array, res: int):
@@ -21,7 +21,7 @@ def heatmap_plot(data, file_path: str):
 
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
-    ax.scatter(x, y, z, c=density, s=points_size,  cmap="RdYlGn_r")
+    ax.scatter(x, y, z, c=density, s=points_size, cmap="RdYlGn_r", alpha=.02)
 
     for i in range(1, 16):
         if i % 2 == 0:
@@ -31,7 +31,7 @@ def heatmap_plot(data, file_path: str):
                 continue
             ax.view_init(i * 22.5, j * 22.5)
             plt.draw()
-            plt.savefig("{}_{}_{}.pdf".format(file_path, i * 22.5, j * 22.5), format="pdf")
+            plt.savefig("{}_{}_{}.png".format(file_path, i * 22.5, j * 22.5), format="png")
 
     plt.close()
 
