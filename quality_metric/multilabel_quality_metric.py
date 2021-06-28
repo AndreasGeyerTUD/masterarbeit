@@ -5,7 +5,7 @@ import warnings
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
-import sklearn.model_selection
+from sklearn.model_selection import train_test_split
 from sklearn.datasets import make_multilabel_classification
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier, AdaBoostClassifier, \
     ExtraTreesClassifier
@@ -16,11 +16,18 @@ from skmultilearn.problem_transform import BinaryRelevance, LabelPowerset, Class
 import sklearn.metrics as metrics
 
 
-def test_dataset(n_samples, n_features, n_classes, n_labels, allow_unlabeled):
-    x, y = make_multilabel_classification(n_samples=n_samples, n_features=n_features, n_classes=n_classes,
-                                          n_labels=n_labels, allow_unlabeled=allow_unlabeled)
+def test_dataset(dataset_config: dict):
+    n_samples = dataset_config["n_samples"]
+    n_features = dataset_config["n_features"]
+    n_classes = dataset_config["n_classes"]
+    n_labels = dataset_config["n_labels"]
+    allow_unlabeled = dataset_config["allow_unlabeled"]
+    random_state = dataset_config["random_state"]
 
-    x_train, x_test, y_train, y_test = sklearn.model_selection.train_test_split(x, y, test_size=0.2)
+    x, y = make_multilabel_classification(n_samples=n_samples, n_features=n_features, n_classes=n_classes,
+                                          n_labels=n_labels, allow_unlabeled=allow_unlabeled, random_state=random_state)
+
+    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2)
 
     return x_train, x_test, y_train, y_test
 
@@ -38,7 +45,7 @@ def calc_errors(y_test, y_pred):
 def ml_knns(x_train, x_test, y_train, y_test, k: int = None):
     results = {}
 
-    for score in ("f1_micro", "jaccard_micro", "accuracy", "precision_micro", "recall_micro"):
+    for score in ("f1_weighted", "jaccard_weighted", "accuracy", "precision_weighted", "recall_weighted"):
         results[score] = {}
 
         for knn in [ml_knn, br_knn]:
@@ -164,13 +171,8 @@ def variants(x_train, x_test, y_train, y_test):
 
 
 def main(dir: str, dataset_config: dict = None):
-    n_samples = dataset_config["n_samples"]
-    n_features = dataset_config["n_features"]
     n_classes = dataset_config["n_classes"]
-    n_labels = dataset_config["n_labels"]
-    allow_unlabeled = dataset_config["allow_unlabeled"]
-    x_train, x_test, y_train, y_test = test_dataset(n_samples=n_samples, n_features=n_features, n_classes=n_classes,
-                                                    n_labels=n_labels, allow_unlabeled=allow_unlabeled)
+    x_train, x_test, y_train, y_test = test_dataset(dataset_config)
 
     # TODO if dataset_config undefined: read from other source
 
@@ -185,8 +187,6 @@ def main(dir: str, dataset_config: dict = None):
     with open("{}/results.json".format(dir), "w") as file:
         json.dump(results, file)
 
-    print()
-
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -200,7 +200,8 @@ if __name__ == "__main__":
     #     "n_features": 21,
     #     "n_classes": 12,
     #     "n_labels": 4,
-    #     "allow_unlabeled": False
+    #     "allow_unlabeled": False,
+    #     "random_state": 4
     # }
 
     dataset_config = {
@@ -208,7 +209,8 @@ if __name__ == "__main__":
         "n_features": 2,
         "n_classes": 3,
         "n_labels": 2,
-        "allow_unlabeled": False
+        "allow_unlabeled": False,
+        "random_state": 4
     }
 
     main(args.directory, dataset_config)
