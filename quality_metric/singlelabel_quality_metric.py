@@ -1,6 +1,9 @@
 import argparse
 import json
 import warnings
+from pathlib import Path
+
+from tqdm import tqdm
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
@@ -32,7 +35,7 @@ def mean_error(true, pred):
     return np.mean(error for _, error in calculate_errors(true, pred))
 
 
-def test_dataset(dataset_config: dict):
+def test_dataset(dataset_config: dict, dir_name):
     n_samples = dataset_config["n_samples"]
     n_features = dataset_config["n_features"]
     n_classes = dataset_config["n_classes"]
@@ -47,12 +50,13 @@ def test_dataset(dataset_config: dict):
 
     x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2)
 
-    plot_clusters(x, y, "test_dataset", "initial_classification")
+    plot_clusters(x, y, dir_name, "initial_classification")
 
     return x, y, x_train, x_test, y_train, y_test
 
 
 def plot_clusters(X, pred, dir_name: str, title: str):
+    Path(dir_name).mkdir(parents=True, exist_ok=True)
     clusters = np.unique(pred)
 
     for cluster in clusters:
@@ -62,7 +66,7 @@ def plot_clusters(X, pred, dir_name: str, title: str):
         plt.title(title)
 
     plt.savefig("{}/{}.pdf".format(dir_name, title), format="pdf")
-    plt.show()
+    # plt.show()
     plt.close()
 
 
@@ -149,36 +153,39 @@ clustering_algorithms = [affinity_propagation, agglomerative, birch, dbscan, k_m
 
 
 def _main(dir: str, dataset_config: dict):
-    x, y, x_train, x_test, y_train, y_test = test_dataset(dataset_config)
-
-    n_classes = dataset_config["n_classes"]
-    n_clusters_per_class = dataset_config["n_clusters_per_class"]
-
-    num_clusters = n_classes * n_clusters_per_class
-    score = "adjusted_rand_score"
-
     results = {}
+    for rs in tqdm(range(100)):
+        dataset_config["random_state"] = rs
+        x, y, x_train, x_test, y_train, y_test = test_dataset(dataset_config, "{}/{}".format(dir, rs))
 
-    for alg in clustering_algorithms:
-        name = str(alg).split(" ")[1]
+        n_classes = dataset_config["n_classes"]
+        n_clusters_per_class = dataset_config["n_clusters_per_class"]
 
-        pred, best_score, best_params = alg(x, y, num_clusters, score)
+        num_clusters = n_classes * n_clusters_per_class
+        score = "adjusted_rand_score"
 
-        plot_clusters(x, pred, dir, name)
+        results[rs] = {}
 
-        errors = calculate_errors(y, pred)
+        for alg in clustering_algorithms:
+            name = str(alg).split(" ")[1]
 
-        results[name] = errors
-        results[name]["opt_score"] = score
-        results[name]["best_score"] = best_score
-        results[name]["best_params"] = best_params
-        results[name]["expected_clusters"] = num_clusters
-        results[name]["found_clusters"] = len(np.unique(pred))
+            pred, best_score, best_params = alg(x, y, num_clusters, score)
 
-    print(results)
+            plot_clusters(x, pred, "{}/{}".format(dir, rs), name)
 
-    with open("{}/results.json".format(dir), "w") as file:
-        json.dump(results, file)
+            errors = calculate_errors(y, pred)
+
+            results[rs][name] = errors
+            results[rs][name]["opt_score"] = score
+            results[rs][name]["best_score"] = best_score
+            results[rs][name]["best_params"] = best_params
+            results[rs][name]["expected_clusters"] = num_clusters
+            results[rs][name]["found_clusters"] = len(np.unique(pred))
+
+        results[rs]["dataset_information"] = dataset_config
+
+        with open("{}/results.json".format(dir), "w") as file:
+            json.dump(results, file)
 
 
 if __name__ == "__main__":
@@ -189,7 +196,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     dataset_config = {
-        "n_samples": 1000,
+        "n_samples": 10000,
         "n_features": 2,
         "n_classes": 4,
         "n_informative": 2,
