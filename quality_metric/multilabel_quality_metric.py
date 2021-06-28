@@ -170,7 +170,7 @@ def variants(x_train, x_test, y_train, y_test):
     return results
 
 
-def main(dir: str, dataset_config: dict = None):
+def _main(dir: str, dataset_config: dict = None):
     n_classes = dataset_config["n_classes"]
     x_train, x_test, y_train, y_test = test_dataset(dataset_config)
 
@@ -213,7 +213,7 @@ if __name__ == "__main__":
         "random_state": 4
     }
 
-    main(args.directory, dataset_config)
+    _main(args.directory, dataset_config)
 
 # https://xang1234.github.io/multi-label/
 # https://link.springer.com/chapter/10.1007/978-3-319-28658-7_43
