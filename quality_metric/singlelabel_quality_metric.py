@@ -71,13 +71,13 @@ def plot_clusters(X, pred, dir_name: str, title: str):
 
 
 def affinity_propagation(X, y, n_clusters: int = None, score: str = None):
-    damping = 0.9
+    parameters = {"damping": [0.5, 0.6, 0.7, 0.8, 0.9, 0.95]}
 
-    model = AffinityPropagation(damping=damping)
+    model = GridSearchCV(AffinityPropagation(), parameters, scoring=score)
 
-    model.fit(X)
+    model.fit(X, y)
 
-    return model.predict(X), None, {"damping": damping}
+    return model.predict(X), model.best_score_, model.best_params_
 
 
 def agglomerative(X, y, n_clusters: int, score: str = None):
@@ -97,11 +97,23 @@ def birch(X, y, n_clusters: int, score: str = None):
 
 
 def dbscan(X, y, n_clusters=None, score: str = None):
-    eps = 0.30
-    min_samples = 9
-    model = DBSCAN(eps=eps, min_samples=min_samples)
+    best_score = 0
+    best_params = None
+    best_labels = None
 
-    return model.fit_predict(X), None, {"eps": eps, "min_samples": min_samples}
+    for eps in [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]:
+        for min_samples in [6, 9, 12, 15, 18, 21]:
+            model = DBSCAN(eps=eps, min_samples=min_samples)
+
+            pred = model.fit_predict(X)
+
+            score = adjusted_rand_score(y, pred)
+            if score > best_score:
+                best_score = score
+                best_labels = pred
+                best_params = {"eps": eps, "min_samples": min_samples}
+
+    return best_labels, best_score, best_params
 
 
 def k_means(X, y, n_clusters, score: str = None):
@@ -127,11 +139,23 @@ def mean_shift(X, y, n_clusters=None, score: str = None):
 
 
 def optics(X, y, n_clusters=None, score: str = None):
-    eps = 0.8
-    min_samples = 10
-    model = OPTICS(eps=0.8, min_samples=10)
+    best_score = 0
+    best_params = None
+    best_labels = None
 
-    return model.fit_predict(X), None, {"eps": eps, "min_samples": min_samples}
+    for eps in [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]:
+        for min_samples in [6, 9, 12, 15, 18, 21]:
+            model = OPTICS(eps=eps, min_samples=min_samples)
+
+            pred = model.fit_predict(X)
+
+            score = adjusted_rand_score(y, pred)
+            if score > best_score:
+                best_score = score
+                best_labels = pred
+                best_params = {"eps": eps, "min_samples": min_samples}
+
+    return best_labels, best_score, best_params
 
 
 def spectral_clustering(X, y, n_clusters, score: str = None):
