@@ -2,6 +2,9 @@ import argparse
 import json
 import time
 import warnings
+from pathlib import Path
+
+from tqdm import tqdm
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
@@ -110,25 +113,25 @@ def br_knn(k, score):
     return GridSearchCV(BRkNNaClassifier(), parameters, scoring=score)
 
 
-def binary_relevance(classifier, y):
+def binary_relevance(classifier, _):
     return BinaryRelevance(
         classifier=classifier(),
         require_dense=[False, True]
     )
 
 
-def label_powerset(classifier, y):
+def label_powerset(classifier, _):
     return LabelPowerset(
         classifier=classifier(),
         require_dense=[False, True]
     )
 
 
-def classifier_chain(classifier, y):
+def classifier_chain(classifier, y_size):
     return ClassifierChain(
         classifier=classifier(),
         require_dense=[False, True],
-        order=range(y.shape[1])
+        order=range(y_size)
     )
 
 
@@ -154,7 +157,7 @@ def variants(x_train, x_test, y_train, y_test):
 
             start = time.time()
 
-            classifier = alg(cl, y_train)
+            classifier = alg(cl, y_train.shape[1])
 
             classifier.fit(x_train, y_train)
 
@@ -171,21 +174,18 @@ def variants(x_train, x_test, y_train, y_test):
 
 
 def _main(dir: str, dataset_config: dict = None):
-    n_classes = dataset_config["n_classes"]
-    x_train, x_test, y_train, y_test = test_dataset(dataset_config)
+    results = {}
+    for rs in tqdm(range(100)):
+        n_classes = dataset_config["n_classes"]
+        dataset_config["random_state"] = rs
+        x_train, x_test, y_train, y_test = test_dataset(dataset_config)
 
-    # TODO if dataset_config undefined: read from other source
+        results[rs] = variants(x_train, x_test, y_train, y_test)
+        results[rs]["ml_knn"] = ml_knns(x_train, x_test, y_train, y_test, n_classes)
+        results[rs]["dataset_information"] = dataset_config
 
-    results_ml_knn = ml_knns(x_train, x_test, y_train, y_test, n_classes)
-
-    results = variants(x_train, x_test, y_train, y_test)
-
-    results["ml_knn"] = results_ml_knn
-
-    results["dataset_information"] = dataset_config
-
-    with open("{}/results.json".format(dir), "w") as file:
-        json.dump(results, file)
+        with open("{}/results.json".format(dir), "w") as file:
+            json.dump(results, file)
 
 
 if __name__ == "__main__":
@@ -212,6 +212,8 @@ if __name__ == "__main__":
         "allow_unlabeled": False,
         "random_state": 4
     }
+
+    Path(args.directory).mkdir(parents=True, exist_ok=True)
 
     _main(args.directory, dataset_config)
 
