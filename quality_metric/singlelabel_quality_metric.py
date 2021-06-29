@@ -177,7 +177,7 @@ clustering_algorithms = [affinity_propagation, agglomerative, birch, dbscan, k_m
 
 
 def _main(dir: str, dataset_config: dict):
-    results = {}
+    results = {"type": "singlelabel"}
     for rs in tqdm(range(100)):
         dataset_config["random_state"] = rs
         x, y, x_train, x_test, y_train, y_test = test_dataset(dataset_config, "{}/{}".format(dir, rs))
