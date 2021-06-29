@@ -47,50 +47,50 @@ def calc_errors(y_test, y_pred):
 
 def ml_knns(x_train, x_test, y_train, y_test, k: int = None):
     results = {}
+    score = "f1_weighted"
 
-    for score in ("f1_weighted", "jaccard_weighted", "accuracy", "precision_weighted", "recall_weighted"):
-        results[score] = {}
+    for knn in [ml_knn, br_knn]:
+        cl_name = str(knn).split(" ")[1]
+        results[cl_name] = {}
+        print("Starting on {}".format(cl_name))
 
-        for knn in [ml_knn, br_knn]:
-            cl_name = str(knn).split(" ")[1]
-            results[score][cl_name] = {}
-            print("Starting on {} {}".format(score, cl_name))
+        classifier_with_k = knn(k, score)
+        classifier_without_k = knn(None, score)
 
-            classifier_with_k = knn(k, score)
-            classifier_without_k = knn(None, score)
+        start = time.time()
 
-            start = time.time()
+        classifier_with_k.fit(x_train, y_train)
 
-            classifier_with_k.fit(x_train, y_train)
+        time_taken_k = round(time.time() - start, 4)
 
-            time_taken_k = round(time.time() - start, 4)
+        print('training time taken with k: ', time_taken_k, 'seconds')
+        print('best parameters :', classifier_with_k.best_params_, 'best score: ', classifier_with_k.best_score_)
 
-            print('training time taken with k: ', time_taken_k, 'seconds')
-            print('best parameters :', classifier_with_k.best_params_, 'best score: ', classifier_with_k.best_score_)
+        y_pred = classifier_with_k.predict(x_test)
 
-            y_pred = classifier_with_k.predict(x_test)
+        results[cl_name]["with_k"] = calc_errors(y_test, y_pred)
+        results[cl_name]["with_k"]["training_time"] = time_taken_k
+        results[cl_name]["with_k"]["parameters"] = classifier_with_k.best_params_
+        results[cl_name]["with_k"]["best_score"] = classifier_with_k.best_score_
 
-            results[score][cl_name]["with_k"] = calc_errors(y_test, y_pred)
-            results[score][cl_name]["with_k"]["training_time"] = time_taken_k
-            results[score][cl_name]["with_k"]["parameters"] = classifier_with_k.best_params_
-            results[score][cl_name]["with_k"]["best_score"] = classifier_with_k.best_score_
+        start = time.time()
 
-            start = time.time()
+        classifier_without_k.fit(x_train, y_train)
 
-            classifier_without_k.fit(x_train, y_train)
+        time_taken_wo_k = round(time.time() - start, 4)
 
-            time_taken_wo_k = round(time.time() - start, 4)
+        print('training time taken without k: ', time_taken_wo_k, 'seconds')
+        print('best parameters :', classifier_without_k.best_params_, 'best score: ',
+              classifier_without_k.best_score_)
 
-            print('training time taken without k: ', time_taken_wo_k, 'seconds')
-            print('best parameters :', classifier_without_k.best_params_, 'best score: ',
-                  classifier_without_k.best_score_)
+        y_pred = classifier_without_k.predict(x_test)
 
-            y_pred = classifier_without_k.predict(x_test)
+        results[cl_name]["without_k"] = calc_errors(y_test, y_pred)
+        results[cl_name]["without_k"]["training_time"] = time_taken_wo_k
+        results[cl_name]["without_k"]["parameters"] = classifier_without_k.best_params_
+        results[cl_name]["without_k"]["best_score"] = classifier_without_k.best_score_
 
-            results[score][cl_name]["without_k"] = calc_errors(y_test, y_pred)
-            results[score][cl_name]["without_k"]["training_time"] = time_taken_wo_k
-            results[score][cl_name]["without_k"]["parameters"] = classifier_without_k.best_params_
-            results[score][cl_name]["without_k"]["best_score"] = classifier_without_k.best_score_
+        results[cl_name]["opt_score"] = score
 
     return results
 
@@ -175,7 +175,7 @@ def variants(x_train, x_test, y_train, y_test):
 
 def _main(dir: str, dataset_config: dict = None):
     results = {"type": "multilabel"}
-    for rs in tqdm(range(100)):
+    for rs in tqdm(range(3)):
         n_classes = dataset_config["n_classes"]
         dataset_config["random_state"] = rs
         x_train, x_test, y_train, y_test = test_dataset(dataset_config)
