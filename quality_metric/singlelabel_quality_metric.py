@@ -214,7 +214,7 @@ def _main(dir: str, dataset_config: dict):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('-d', "--directory", action='store', type=str, default="test_dataset",
+    parser.add_argument('-d', "--directory", action='store', type=str, default="singlelabel_test_dataset",
                         help='Dictionary where to save images and results.')
 
     args = parser.parse_args()
