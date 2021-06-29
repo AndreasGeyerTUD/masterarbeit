@@ -175,7 +175,7 @@ def variants(x_train, x_test, y_train, y_test):
 
 def _main(dir: str, dataset_config: dict = None):
     results = {"type": "multilabel"}
-    for rs in tqdm(range(3)):
+    for rs in tqdm(range(100)):
         n_classes = dataset_config["n_classes"]
         dataset_config["random_state"] = rs
         x_train, x_test, y_train, y_test = test_dataset(dataset_config)
