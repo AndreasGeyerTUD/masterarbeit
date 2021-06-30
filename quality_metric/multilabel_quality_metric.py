@@ -51,12 +51,15 @@ def ml_knns(x_train, x_test, y_train, y_test, k: int = None, debug: bool = False
 
     for knn in [ml_knn, br_knn]:
         cl_name = str(knn).split(" ")[1]
-        results[cl_name] = {}
 
         if debug: print("Starting on {}".format(cl_name))
 
         classifier_with_k = knn(k, score)
         classifier_without_k = knn(None, score)
+
+        name = "{} with_k".format(cl_name)
+
+        if debug: print("Starting on {}".format(name))
 
         start = time.time()
 
@@ -64,16 +67,21 @@ def ml_knns(x_train, x_test, y_train, y_test, k: int = None, debug: bool = False
 
         time_taken_k = round(time.time() - start, 4)
 
-        if debug: print('training time taken with k: ', time_taken_k, 'seconds')
-        if debug: print('best parameters :', classifier_with_k.best_params_, 'best score: ',
-                        classifier_with_k.best_score_)
+        if debug: print('training time taken with k: {} seconds'.format(time_taken_k))
+        if debug: print('best parameters: {}'.format(classifier_with_k.best_params_))
+        if debug: print('best score: {}'.format(classifier_with_k.best_score_))
 
         y_pred = classifier_with_k.predict(x_test)
 
-        results[cl_name]["with_k"] = calc_errors(y_test, y_pred)
-        results[cl_name]["with_k"]["training_time"] = time_taken_k
-        results[cl_name]["with_k"]["parameters"] = classifier_with_k.best_params_
-        results[cl_name]["with_k"]["best_score"] = classifier_with_k.best_score_
+        results[name] = calc_errors(y_test, y_pred)
+        results[name]["training_time"] = time_taken_k
+        results[name]["best_params"] = classifier_with_k.best_params_
+        results[name]["best_score"] = classifier_with_k.best_score_
+        results[name]["opt_score"] = score
+
+        name = "{} without_k".format(cl_name)
+
+        if debug: print("Starting on {}".format(name))
 
         start = time.time()
 
@@ -81,18 +89,17 @@ def ml_knns(x_train, x_test, y_train, y_test, k: int = None, debug: bool = False
 
         time_taken_wo_k = round(time.time() - start, 4)
 
-        if debug: print('training time taken without k: ', time_taken_wo_k, 'seconds')
-        if debug: print('best parameters :', classifier_without_k.best_params_, 'best score: ',
-                        classifier_without_k.best_score_)
+        if debug: print('training time taken without k: {} seconds'.format(time_taken_wo_k))
+        if debug: print('best parameters: {}'.format(classifier_without_k.best_params_))
+        if debug: print('best score: {}'.format(classifier_without_k.best_score_))
 
         y_pred = classifier_without_k.predict(x_test)
 
-        results[cl_name]["without_k"] = calc_errors(y_test, y_pred)
-        results[cl_name]["without_k"]["training_time"] = time_taken_wo_k
-        results[cl_name]["without_k"]["parameters"] = classifier_without_k.best_params_
-        results[cl_name]["without_k"]["best_score"] = classifier_without_k.best_score_
-
-        results[cl_name]["opt_score"] = score
+        results[name] = calc_errors(y_test, y_pred)
+        results[name]["training_time"] = time_taken_wo_k
+        results[name]["best_params"] = classifier_without_k.best_params_
+        results[name]["best_score"] = classifier_without_k.best_score_
+        results[name]["opt_score"] = score
 
     return results
 
@@ -147,15 +154,15 @@ def variants(x_train, x_test, y_train, y_test, debug: bool = False):
     for alg in algorithms:
         alg_name = str(alg).split(" ")[1]
 
-        results[alg_name] = {}
-
         for cl in classifiers:
             cl_name = str(cl).split(".")[-1].split("'")[0]
 
-            if cl_name == "GradientBoostingClassifier" and alg_name == "label_powerset":
+            name = "{} {}".format(alg_name, cl_name)
+
+            if name == "label_powerset GradientBoostingClassifier":
                 continue
 
-            if debug: print("Starting on " + alg_name + " " + cl_name)
+            if debug: print("Starting on {}".format(name))
 
             start = time.time()
 
@@ -165,12 +172,12 @@ def variants(x_train, x_test, y_train, y_test, debug: bool = False):
 
             time_taken = round(time.time() - start, 4)
 
-            if debug: print('training time taken: ', time_taken, 'seconds')
+            if debug: print('training time taken: {} seconds'.format(time_taken))
 
             y_pred = classifier.predict(x_test)
 
-            results[alg_name][cl_name] = calc_errors(y_test, y_pred)
-            results[alg_name][cl_name]["training_time"] = time_taken
+            results[name] = calc_errors(y_test, y_pred)
+            results[name]["training_time"] = time_taken
 
     return results
 
@@ -195,8 +202,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('-d', "--directory", action='store', type=str, default="multilabel_test_dataset",
                         help='Dictionary where to save images and results.')
-    parser.add_argument("--debug", action='store_true', type=bool, default=False,
-                        help='Whether to print debug information.')
+    parser.add_argument("--debug", action='store_true', default=False, help='Whether to print debug information.')
 
     args = parser.parse_args()
 
