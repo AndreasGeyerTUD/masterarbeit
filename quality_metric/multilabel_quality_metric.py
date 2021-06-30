@@ -45,14 +45,15 @@ def calc_errors(y_test, y_pred):
     return errors
 
 
-def ml_knns(x_train, x_test, y_train, y_test, k: int = None):
+def ml_knns(x_train, x_test, y_train, y_test, k: int = None, debug: bool = False):
     results = {}
     score = "f1_weighted"
 
     for knn in [ml_knn, br_knn]:
         cl_name = str(knn).split(" ")[1]
         results[cl_name] = {}
-        print("Starting on {}".format(cl_name))
+
+        if debug: print("Starting on {}".format(cl_name))
 
         classifier_with_k = knn(k, score)
         classifier_without_k = knn(None, score)
@@ -63,8 +64,9 @@ def ml_knns(x_train, x_test, y_train, y_test, k: int = None):
 
         time_taken_k = round(time.time() - start, 4)
 
-        print('training time taken with k: ', time_taken_k, 'seconds')
-        print('best parameters :', classifier_with_k.best_params_, 'best score: ', classifier_with_k.best_score_)
+        if debug: print('training time taken with k: ', time_taken_k, 'seconds')
+        if debug: print('best parameters :', classifier_with_k.best_params_, 'best score: ',
+                        classifier_with_k.best_score_)
 
         y_pred = classifier_with_k.predict(x_test)
 
@@ -79,9 +81,9 @@ def ml_knns(x_train, x_test, y_train, y_test, k: int = None):
 
         time_taken_wo_k = round(time.time() - start, 4)
 
-        print('training time taken without k: ', time_taken_wo_k, 'seconds')
-        print('best parameters :', classifier_without_k.best_params_, 'best score: ',
-              classifier_without_k.best_score_)
+        if debug: print('training time taken without k: ', time_taken_wo_k, 'seconds')
+        if debug: print('best parameters :', classifier_without_k.best_params_, 'best score: ',
+                        classifier_without_k.best_score_)
 
         y_pred = classifier_without_k.predict(x_test)
 
@@ -139,7 +141,7 @@ algorithms = [binary_relevance, label_powerset, classifier_chain]
 classifiers = [RandomForestClassifier, GradientBoostingClassifier, AdaBoostClassifier, ExtraTreesClassifier]
 
 
-def variants(x_train, x_test, y_train, y_test):
+def variants(x_train, x_test, y_train, y_test, debug: bool = False):
     results = {}
 
     for alg in algorithms:
@@ -153,7 +155,7 @@ def variants(x_train, x_test, y_train, y_test):
             if cl_name == "GradientBoostingClassifier" and alg_name == "label_powerset":
                 continue
 
-            print("Starting on " + alg_name + " " + cl_name)
+            if debug: print("Starting on " + alg_name + " " + cl_name)
 
             start = time.time()
 
@@ -163,7 +165,7 @@ def variants(x_train, x_test, y_train, y_test):
 
             time_taken = round(time.time() - start, 4)
 
-            print('training time taken: ', time_taken, 'seconds')
+            if debug: print('training time taken: ', time_taken, 'seconds')
 
             y_pred = classifier.predict(x_test)
 
@@ -173,15 +175,16 @@ def variants(x_train, x_test, y_train, y_test):
     return results
 
 
-def _main(dir: str, dataset_config: dict = None):
+def _main(dir: str, dataset_config: dict = None, debug: bool = False):
     results = {"type": "multilabel"}
     for rs in tqdm(range(100)):
         n_classes = dataset_config["n_classes"]
         dataset_config["random_state"] = rs
         x_train, x_test, y_train, y_test = test_dataset(dataset_config)
 
-        results[rs] = variants(x_train, x_test, y_train, y_test)
-        results[rs]["ml_knn"] = ml_knns(x_train, x_test, y_train, y_test, n_classes)
+        results[rs] = variants(x_train, x_test, y_train, y_test, debug=debug)
+        results_ml_knns = ml_knns(x_train, x_test, y_train, y_test, n_classes, debug=debug)
+        results[rs] = {**results[rs], **results_ml_knns}
         results[rs]["dataset_information"] = dataset_config
 
         with open("{}/results.json".format(dir), "w") as file:
@@ -192,6 +195,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('-d', "--directory", action='store', type=str, default="multilabel_test_dataset",
                         help='Dictionary where to save images and results.')
+    parser.add_argument("--debug", action='store_true', type=bool, default=False,
+                        help='Whether to print debug information.')
 
     args = parser.parse_args()
 
@@ -215,7 +220,7 @@ if __name__ == "__main__":
 
     Path(args.directory).mkdir(parents=True, exist_ok=True)
 
-    _main(args.directory, dataset_config)
+    _main(args.directory, dataset_config, args.debug)
 
 # https://xang1234.github.io/multi-label/
 # https://link.springer.com/chapter/10.1007/978-3-319-28658-7_43
