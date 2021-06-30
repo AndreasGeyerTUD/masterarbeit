@@ -176,7 +176,7 @@ clustering_algorithms = [affinity_propagation, agglomerative, birch, dbscan, k_m
                          optics, spectral_clustering, gaussian_mixture_model]
 
 
-def _main(dir: str, dataset_config: dict):
+def _main(dir: str, dataset_config: dict, plot: bool = False, debug: bool = False):
     results = {"type": "singlelabel"}
     for rs in tqdm(range(100)):
         dataset_config["random_state"] = rs
@@ -193,11 +193,15 @@ def _main(dir: str, dataset_config: dict):
         for alg in clustering_algorithms:
             name = str(alg).split(" ")[1]
 
+            if debug: print("Starting on {}".format(name))
+
             pred, best_score, best_params = alg(x, y, num_clusters, score)
 
-            plot_clusters(x, pred, "{}/{}".format(dir, rs), name)
+            if plot: plot_clusters(x, pred, "{}/{}".format(dir, rs), name)
 
             errors = calculate_errors(y, pred)
+
+            if debug: print(errors)
 
             results[rs][name] = errors
             results[rs][name]["opt_score"] = score
@@ -216,6 +220,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('-d', "--directory", action='store', type=str, default="singlelabel_test_dataset",
                         help='Dictionary where to save images and results.')
+    parser.add_argument("--debug", action='store_true', default=False, help='Whether to print debug information.')
+    parser.add_argument("-p", "--plot", action='store_true', default=False, help='Whether to plot the figures.')
 
     args = parser.parse_args()
 
@@ -229,7 +235,7 @@ if __name__ == "__main__":
         "random_state": 4
     }
 
-    _main(args.directory, dataset_config)
+    _main(args.directory, dataset_config, args.plot, args.debug)
 
 # TODO: Classification/Clustering Abgrenzung und Untersuchung
 
