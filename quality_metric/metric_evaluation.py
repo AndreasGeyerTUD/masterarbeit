@@ -51,7 +51,7 @@ def plot_boxplot(data, dir_name: str, title: str):
     title = title.replace(" ", "_")
 
     plt.savefig("{}/plots/{}.pdf".format(dir_name, title), format="pdf")
-    plt.show()
+    # plt.show()
     plt.close()
 
 
