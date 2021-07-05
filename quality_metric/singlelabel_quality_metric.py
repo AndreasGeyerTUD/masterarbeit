@@ -13,7 +13,7 @@ from sklearn.cluster import AffinityPropagation, AgglomerativeClustering, Birch,
     MiniBatchKMeans, OPTICS, SpectralClustering
 from sklearn.datasets import make_classification
 from sklearn.metrics import adjusted_mutual_info_score, adjusted_rand_score, completeness_score, fowlkes_mallows_score, \
-    homogeneity_score, v_measure_score, accuracy_score, jaccard_score
+    homogeneity_score, v_measure_score, accuracy_score, jaccard_score, hamming_loss
 from sklearn.mixture import GaussianMixture
 from sklearn.model_selection import GridSearchCV, train_test_split
 
@@ -24,6 +24,8 @@ from functools import partial
 def error_with_label_permutation(y_true, y_pred, metric):
     """
     Permute labels of y_pred to match y_true as much as possible
+
+    https://programtalk.com/python-examples/sklearn.utils.linear_assignment_.linear_assignment/
     """
     if len(y_true) != len(y_pred):
         print("y_true.shape must == y_pred.shape")
@@ -65,8 +67,12 @@ def jaccard(y_true, y_pred):
     return error_with_label_permutation(y_true, y_pred, partial(jaccard_score, average="micro"))
 
 
+def hamming(y_true, y_pred):
+    return error_with_label_permutation(y_true, y_pred, hamming_loss)
+
+
 metrics = [adjusted_mutual_info_score, adjusted_rand_score, completeness_score, fowlkes_mallows_score,
-           homogeneity_score, v_measure_score, accuracy, jaccard]
+           homogeneity_score, v_measure_score, accuracy, jaccard, hamming]
 
 
 def calculate_errors(true, pred):
