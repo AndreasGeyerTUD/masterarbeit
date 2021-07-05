@@ -13,22 +13,64 @@ from sklearn.cluster import AffinityPropagation, AgglomerativeClustering, Birch,
     MiniBatchKMeans, OPTICS, SpectralClustering
 from sklearn.datasets import make_classification
 from sklearn.metrics import adjusted_mutual_info_score, adjusted_rand_score, completeness_score, fowlkes_mallows_score, \
-    homogeneity_score, v_measure_score, hamming_loss, accuracy_score, f1_score, jaccard_score, recall_score, \
-    precision_score
+    homogeneity_score, v_measure_score, accuracy_score, jaccard_score
 from sklearn.mixture import GaussianMixture
 from sklearn.model_selection import GridSearchCV, train_test_split
 
+from scipy.optimize import linear_sum_assignment as linear_assignment
+from functools import partial
+
+
+def error_with_label_permutation(y_true, y_pred, metric):
+    """
+    Permute labels of y_pred to match y_true as much as possible
+    """
+    if len(y_true) != len(y_pred):
+        print("y_true.shape must == y_pred.shape")
+        exit(0)
+
+    label1 = np.unique(y_true)
+    n_class1 = len(label1)
+
+    label2 = np.unique(y_pred)
+    n_class2 = len(label2)
+
+    if n_class1 != n_class2: return metric(y_true, y_pred)
+
+    n_class = max(n_class1, n_class2)
+    G = np.zeros((n_class, n_class))
+
+    for i in range(0, n_class1):
+        for j in range(0, n_class2):
+            ss = y_true == label1[i]
+            tt = y_pred == label2[j]
+            G[i, j] = np.count_nonzero(ss & tt)
+
+    A = linear_assignment(-G)
+
+    new_l2 = np.zeros(y_pred.shape)
+    for i in range(0, n_class2):
+        new_l2[y_pred == label2[A[1][i]]] = label1[A[0][i]]
+
+    new_y_pred = new_l2.astype(int)
+
+    return metric(y_true, new_y_pred)
+
+
+def accuracy(y_true, y_pred):
+    return error_with_label_permutation(y_true, y_pred, accuracy_score)
+
+
+def jaccard(y_true, y_pred):
+    return error_with_label_permutation(y_true, y_pred, partial(jaccard_score, average="micro"))
+
+
 metrics = [adjusted_mutual_info_score, adjusted_rand_score, completeness_score, fowlkes_mallows_score,
-           homogeneity_score, v_measure_score, hamming_loss, accuracy_score]
-metrics_2 = [f1_score, jaccard_score, recall_score, precision_score]
+           homogeneity_score, v_measure_score, accuracy, jaccard]
 
 
 def calculate_errors(true, pred):
-    errors = {str(met).split(" ")[1]: met(true, pred) for met in metrics}
-    errors_2 = {str(met).split(" ")[1]: met(true, pred, average='micro') for met in metrics_2}
-
-    errors = {**errors, **errors_2}
-    return errors
+    return {str(met).split(" ")[1]: met(true, pred) for met in metrics}
 
 
 def mean_error(true, pred):
