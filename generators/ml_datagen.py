@@ -29,19 +29,21 @@ def generate_small_hyperspheres_hypercubes(m_rel: int, q: int, max_r: float, min
                 while True:
                     random.seed(cantor_pairing(random_state, k + j))
                     c = (random.random() * (max_c - min_c)) + min_c
-                    upper_bound = math.sqrt(((1 - r) ** 2) - np.sum(np.square(c_i)))
-                    if c <= (1 - r) and abs(c) <= upper_bound: break
+                    if hyperspheres:
+                        upper_bound = math.sqrt(((1 - r) ** 2) - np.sum(np.square(c_i)))
+                        if c <= (1 - r) and abs(c) <= upper_bound: break
+                    else:
+                        if c <= (1 - r): break
                     k += 1
                     if k > 100000: raise TimeoutError("After 100000 executions the stopping condition wasn't met!")
 
-                # if hyperspheres:
-                # max_c = update_min_max_c(r, c_i)
-                # max_c = math.sqrt(((1 - r) ** 2) - np.sum(np.square(c_i)))
-                # min_c = - max_c
-
                 c_i[j] = c
 
-            if np.sum(np.square(c_i)) <= (1 - r) ** 2:
+            if hyperspheres:
+                if np.sum(np.square(c_i)) <= (1 - r) ** 2:
+                    hs.append((r, c_i))
+                    break
+            else:
                 hs.append((r, c_i))
                 break
 
@@ -66,17 +68,15 @@ def generate_points_inside_hyperspheres(m_rel: int, n: int, c: list, r: float, h
             while True:
                 random.seed(cantor_pairing(random_state, i + j))
                 x = (random.random() * (max_x - min_x)) + min_x
-                if abs(x - c[j]) > r: continue
-                bound = math.sqrt(r ** 2 - sum([(x_h - c_h) ** 2 if x_h != 0 else 0 for x_h, c_h in zip(x_i, c)]))
-                if c[j] - bound <= x <= c[j] + bound:
-                    break
+                if hyperspheres:
+                    if abs(x - c[j]) > r: continue
+                    bound = math.sqrt(r ** 2 - sum([(x_h - c_h) ** 2 if x_h != 0 else 0 for x_h, c_h in zip(x_i, c)]))
+                    if c[j] - bound <= x <= c[j] + bound:
+                        break
+                else:
+                    if abs(x - c[j]) <= r: break
                 k += 1
                 if k > 100000: raise TimeoutError("After 100000 executions the stopping condition wasn't met!")
-
-            # if hyperspheres:
-            #     new_min_max = update_min_max_x(min_x)
-            #     min_x = c[i][j] - new_min_max
-            #     max_x = c[i][j] + new_min_max
 
             x_i[j] = x
 
@@ -118,39 +118,9 @@ def add_irrelevant(dataset, n, random_state: int = None):
     return dataset
 
 
-# def generate_small_hypercubes(q: int, minR: float, maxR: float):
-#     hc = []
-#     for i in range(q):
-#         C = {}
-#         e = (random.random() * (maxR - minR)) + minR
-#         maxC = 1 - e
-#         minC = - maxC
-#
-#         for j in range():
-#             c = (random.random() * (maxC - minC)) + minC
-#             C.update(c)
-#
-#         hc.append((e, C))
-#
-#     return hc
-
-
-# def generate_points_inside_hypercubes(N: int, c, e):
-#     for i in range(N):
-#         X = {}
-#         maxX = c - e
-#         minX = c + e
-#
-#         for j in range():
-#             x = (random.random() * (maxX - minX)) + minX
-#             X.update(x)
-#
-#     return X
-
-
-def hyperspheres(m_rel: int, m_irr: int, m_red: int, q: int, n: int, max_r: float = None, min_r: float = None,
-                 my: [float] = [0.05, 0.1], name: str = "Dataset test", random_state: int = None,
-                 points_distribution: str = None, save_path: str = None):
+def _main(shape: str, m_rel: int, m_irr: int, m_red: int, q: int, n: int, max_r: float = None, min_r: float = None,
+          my: [float] = None, name: str = "Dataset test", random_state: int = None,
+          points_distribution: str = None, save_dir: str = None):
     if max_r is None:
         max_r = 0.8
     if min_r is None:
@@ -177,15 +147,15 @@ def hyperspheres(m_rel: int, m_irr: int, m_red: int, q: int, n: int, max_r: floa
     if min_r >= max_r > 0.8:
         raise ValueError("min_r < max_r <= 0.8 is required!")
 
-    hyperspheres = generate_small_hyperspheres_hypercubes(m_rel, q, max_r, min_r, True, random_state)
+    hypershapes = generate_small_hyperspheres_hypercubes(m_rel, q, max_r, min_r, shape == "spheres", random_state)
 
     if points_distribution == "normal":
         ns = [int(n / q)] * q
     else:
         ns = []
-        f = n / np.sum(np.array(hyperspheres)[:, 0])
+        f = n / np.sum(np.array(hypershapes)[:, 0])
 
-        for r, c in hyperspheres:
+        for r, c in hypershapes:
             ns.append(round(r * f))
 
     i = 0
@@ -198,14 +168,14 @@ def hyperspheres(m_rel: int, m_irr: int, m_red: int, q: int, n: int, max_r: floa
         i += 1
 
     dataset = []
-    for size, (r, c) in zip(ns, hyperspheres):
-        dataset.append(generate_points_inside_hyperspheres(m_rel, size, c, r, True, random_state))
+    for size, (r, c) in zip(ns, hypershapes):
+        dataset.append(generate_points_inside_hyperspheres(m_rel, size, c, r, shape == "spheres", random_state))
 
     dataset = [item for sublist in dataset for item in sublist]
 
     dataset = pd.DataFrame(dataset)
 
-    labels = assign_labels(dataset, hyperspheres, q, n)
+    labels = assign_labels(dataset, hypershapes, q, n)
 
     dataset.rename({i: "rel{}".format(i) for i in range(m_rel)}, axis=1, inplace=True)
 
@@ -218,18 +188,19 @@ def hyperspheres(m_rel: int, m_irr: int, m_red: int, q: int, n: int, max_r: floa
 
     # dataset = pd.concat([dataset, labels], axis=1)
 
-    if save_path:
-        Path(save_path).mkdir(parents=True, exist_ok=True)
-        with open(save_path + name.lower() + "_dataset.csv", "w")as file:
+    if save_dir:
+        Path(save_dir).mkdir(parents=True, exist_ok=True)
+        with open("{}/{}_{}_dataset.csv".format(save_dir, name.lower(), shape), "w")as file:
             dataset.to_csv(file, index=False)
-        with open(save_path + name.lower() + "_labels.csv", "w")as file:
+        with open("{}/{}_{}_labels.csv".format(save_dir, name.lower(), shape), "w")as file:
             labels.to_csv(file, index=False)
 
     return dataset, labels
 
 
 if __name__ == "__main__":
-    dataset, labels = hyperspheres(4, 3, 2, 3, 100, None, None, [], "Test", None, None, "ml_datagen/")
+    dataset, labels = _main("cubes", 4, 3, 2, 3, 100, None, None, [], "Test", None, None, "ml_datagen")
+    dataset, labels = _main("spheres", 4, 3, 2, 3, 100, None, None, [], "Test", None, None, "ml_datagen")
 
-    data = pd.read_csv("ml_datagen/test_dataset.csv")
-    print()
+    # data = pd.read_csv("ml_datagen/test_dataset.csv")
+    # print()
