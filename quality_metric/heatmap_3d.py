@@ -3,16 +3,40 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
+from scipy import stats
 from sklearn.datasets import make_classification
 from tqdm import tqdm
-from scipy import stats
 
 
 def _round(matrix: np.array, res: int):
     return (np.round(matrix, len(str(res))) * res).astype(int)
 
 
-def heatmap_plot(data, file_path: str):
+def heatmap_plot_2d(data: np.array, res: int, title: str, file_path: str, cmap: str = None):
+    x, y, z = data[:, 0], data[:, 1], data[:, 2]
+
+    for v_1, n_1, v_2, n_2 in [(x, "x", y, "y"), (y, "y", z, "z"), (x, "x", z, "z")]:
+        cur_data = np.zeros((res + 1, res + 1)).astype(int)
+        for i, j in zip(v_1, v_2):
+            cur_data[i][j] += 1
+
+        fig, ax = plt.subplots()
+
+        cur_title = title + "_{}{}".format(n_1, n_2)
+
+        plt.imshow(cur_data, cmap=cmap, interpolation='nearest')
+        plt.colorbar()
+        ax.set_title(cur_title)
+        plt.xlabel(n_1)
+        plt.ylabel(n_2)
+        ax.set_xticks([])
+        ax.set_yticks([])
+        plt.savefig("{}/{}_{}.pdf".format(file_path, cur_title, cmap), format="pdf")
+        plt.show()
+        plt.clf()
+
+
+def heatmap_plot_3d(data, file_path: str):
     x, y, z = data[:, 0], data[:, 1], data[:, 2]
     xyz = np.vstack([x, y, z])
     density = stats.gaussian_kde(xyz)(xyz)
@@ -21,7 +45,7 @@ def heatmap_plot(data, file_path: str):
 
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
-    ax.scatter(x, y, z, c=density, s=points_size,  cmap="RdYlGn_r")
+    ax.scatter(x, y, z, c=density, s=points_size, cmap="RdYlGn_r", alpha=.02)
 
     for i in range(1, 16):
         if i % 2 == 0:
@@ -31,13 +55,13 @@ def heatmap_plot(data, file_path: str):
                 continue
             ax.view_init(i * 22.5, j * 22.5)
             plt.draw()
-            plt.savefig("{}_{}_{}.pdf".format(file_path, i * 22.5, j * 22.5), format="pdf")
+            plt.savefig("{}_{}_{}.png".format(file_path, i * 22.5, j * 22.5), format="png")
 
     plt.close()
 
 
 def _main(save_dir: str):
-    for res in [10, 100, 1000]:
+    for res in [10, 100, 1000, 10000]:
         cwd = save_dir + "/" + str(res)
         Path(cwd).mkdir(parents=True, exist_ok=True)
 
@@ -54,7 +78,9 @@ def _main(save_dir: str):
             else:
                 whole_data = np.concatenate([whole_data, data], axis=0)
 
-        heatmap_plot(whole_data, "{}/density_plot".format(cwd))
+        if res <= 100: heatmap_plot_3d(whole_data, "{}/density_plot".format(cwd))
+        heatmap_plot_2d(whole_data, res, "heatmap", cwd, "gist_heat")
+        heatmap_plot_2d(whole_data, res, "heatmap", cwd, "tab20c_r")
 
 
 if __name__ == "__main__":
