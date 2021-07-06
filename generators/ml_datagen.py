@@ -225,11 +225,11 @@ def hyperspheres(m_rel: int, m_irr: int, m_red: int, q: int, n: int, max_r: floa
         with open(save_path + name.lower() + "_labels.csv", "w")as file:
             labels.to_csv(file, index=False)
 
-    return dataset
+    return dataset, labels
 
 
 if __name__ == "__main__":
-    hyperspheres(4, 3, 2, 3, 100, None, None, [], "Test", 1, None, "ml_datagen/")
+    dataset, labels = hyperspheres(4, 3, 2, 3, 100, None, None, [], "Test", None, None, "ml_datagen/")
 
     data = pd.read_csv("ml_datagen/test_dataset.csv")
     print()
