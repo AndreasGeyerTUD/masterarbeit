@@ -118,9 +118,27 @@ def add_irrelevant(dataset, n, random_state: int = None):
     return dataset
 
 
-def _main(shape: str, m_rel: int, m_irr: int, m_red: int, q: int, n: int, max_r: float = None, min_r: float = None,
-          my: [float] = None, name: str = "Dataset test", random_state: int = None,
-          points_distribution: str = None, save_dir: str = None):
+def add_noise(labels, noise_levels, q: int):
+    noisy_labels = []
+
+    for noise in noise_levels:
+        new_labels = []
+        for label in labels.values:
+            new_values = []
+            for val in label:
+                rand = random.random()
+                if rand < noise:
+                    val = (val + 1) % 2
+                new_values.append(val)
+            new_labels.append(new_values)
+        noisy_labels.append(pd.DataFrame(new_labels, columns=["l{}".format(i) for i in range(q)]))
+
+    return noisy_labels
+
+
+def generate(shape: str, m_rel: int, m_irr: int, m_red: int, q: int, n: int, max_r: float = None, min_r: float = None,
+             noise_levels: [float] = None, name: str = "Dataset test", random_state: int = None,
+             points_distribution: str = None, save_dir: str = None):
     if max_r is None:
         max_r = 0.8
     if min_r is None:
@@ -140,7 +158,7 @@ def _main(shape: str, m_rel: int, m_irr: int, m_red: int, q: int, n: int, max_r:
         raise ValueError("max_r (the maximum radius) must be larger than 0!")
     if min_r <= 0:
         raise ValueError("min_r (the minimum radius) must be larger than 0!")
-    if my is not None and any([m < 0 for m in my]):
+    if noise_levels is not None and any([m < 0 for m in noise_levels]):
         raise ValueError("my (the levels of noise) must be at least 0 for every level!")
     if m_red > m_rel:
         raise ValueError("m_red must not be larger then m_rel!")
@@ -186,7 +204,10 @@ def _main(shape: str, m_rel: int, m_irr: int, m_red: int, q: int, n: int, max_r:
     np.random.seed(cantor_pairing(random_state, 1))
     dataset = dataset[np.random.permutation(dataset.columns)]
 
-    # dataset = pd.concat([dataset, labels], axis=1)
+    noisy_labels = []
+
+    if noise_levels is not None and noise_levels:
+        noisy_labels = add_noise(labels.copy(), noise_levels, q)
 
     if save_dir:
         Path(save_dir).mkdir(parents=True, exist_ok=True)
@@ -194,13 +215,15 @@ def _main(shape: str, m_rel: int, m_irr: int, m_red: int, q: int, n: int, max_r:
             dataset.to_csv(file, index=False)
         with open("{}/{}_{}_labels.csv".format(save_dir, name.lower(), shape), "w")as file:
             labels.to_csv(file, index=False)
+        for ind, noise_level in enumerate(noisy_labels):
+            with open("{}/{}_{}_n{}_labels.csv".format(save_dir, name.lower(), shape, ind), "w")as file:
+                noise_level.to_csv(file, index=False)
 
-    return dataset, labels
+    return dataset, labels, noisy_labels
 
 
 if __name__ == "__main__":
-    dataset, labels = _main("cubes", 4, 3, 2, 3, 100, None, None, [], "Test", None, None, "ml_datagen")
-    dataset, labels = _main("spheres", 4, 3, 2, 3, 100, None, None, [], "Test", None, None, "ml_datagen")
-
-    # data = pd.read_csv("ml_datagen/test_dataset.csv")
-    # print()
+    dataset, labels, noisy_labels = generate("cubes", 4, 3, 2, 3, 100, None, None, [0.1, 0.2, 0.5], "Test", None, None,
+                                             "ml_datagen")
+    dataset, labels, noisy_labels = generate("spheres", 4, 3, 2, 3, 100, None, None, [], "Test", None, None,
+                                             "ml_datagen")
