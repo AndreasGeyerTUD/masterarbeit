@@ -192,10 +192,10 @@ def add_irrelevant(dataset: pd.DataFrame, m_irr: int, random_state: int = None) 
     return dataset
 
 
-def add_noise(labels: pd.DataFrame, noise_levels: Union[list[float], None], q: int, random_state: int = None) \
+def add_noise_multilabel(labels: pd.DataFrame, noise_levels: Union[list[float], None], q: int, random_state: int = None) \
         -> list[pd.DataFrame]:
     """
-    Create noisy labels. The defined noise_levels tell with which probability a point changes a label.
+    Create noisy labels for multilabel. The defined noise_levels tell with which probability a point changes a label.
 
     Example: noise_levels = [0.1] means, that every entry in the One-Hot-Encoded label list switches with a probability
     of 0.1.
@@ -228,9 +228,43 @@ def add_noise(labels: pd.DataFrame, noise_levels: Union[list[float], None], q: i
     return noisy_labels
 
 
+def add_noise_singlelabel(labels: pd.DataFrame, noise_levels: Union[list[float], None], q: int,
+                          random_state: int = None) -> list[pd.DataFrame]:
+    """
+    Create noisy labels for singlelabel. The defined noise_levels tell with which probability a point changes its label.
+
+    Example: noise_levels = [0.1] means, that every entry in labels changes its value with a probability of 10% to
+    another value.
+
+    :param labels: The noiseless labels. These are used as ground truth to add noise.
+    :param noise_levels: A list with the probability that the labels switch. 3 entries for example cause 3 different
+        results.
+    :param q: The number of possible labels.
+    :param random_state: The random state to use. For determinism. This is paired (Cantor Pairing) with another value
+        for the random seed.
+    :return: A list containing as many pandas.DataFrame (labels) as there are entries in noise_levels.
+    """
+
+    noisy_labels = []
+    if noise_levels is not None and noise_levels:
+        for i, noise in enumerate(noise_levels):
+            new_labels = []
+            for label in labels.values:
+                random.seed(cantor_pairing(random_state, cantor_pairing(i, label)))
+                rand = random.random()
+                if rand < noise:
+                    random.seed(cantor_pairing(random_state, cantor_pairing(label, i)))
+                    rand = round(random.random() * q)
+                    label = (label + rand) % q
+                new_labels.append(label)
+            noisy_labels.append(pd.DataFrame(new_labels, columns=["labels"]))
+
+    return noisy_labels
+
+
 def generate(shape: str, m_rel: int, m_irr: int, m_red: int, q: int, n: int, max_r: float = None, min_r: float = None,
              noise_levels: [float] = None, name: str = "Dataset test", random_state: int = None,
-             points_distribution: str = None, save_dir: str = None) \
+             points_distribution: str = None, save_dir: str = None, singlelabel: bool = False) \
         -> Tuple[pd.DataFrame, pd.DataFrame, list[pd.DataFrame]]:
     """
     The coordination function for generating the synthetic dataset with the given parameters.
@@ -307,14 +341,21 @@ def generate(shape: str, m_rel: int, m_irr: int, m_red: int, q: int, n: int, max
         i += 1
 
     dataset = []
-    for size, (r, c) in zip(ns, hypershapes):
-        dataset.append(generate_points_inside_hypershape(m_rel, size, c, r, shape == "spheres", random_state))
-
-    dataset = [item for sublist in dataset for item in sublist]
+    for idx, (size, (r, c)) in enumerate(zip(ns, hypershapes)):
+        points = generate_points_inside_hypershape(m_rel, size, c, r, shape == "spheres", random_state)
+        for point in points:
+            if singlelabel:
+                point.append(idx)
+            dataset.append(point)
 
     dataset = pd.DataFrame(dataset)
 
-    labels = assign_labels(dataset, hypershapes, q)
+    if not singlelabel:
+        labels = assign_labels(dataset, hypershapes, q)
+    else:
+        labels = dataset[m_rel].to_frame()
+        labels.rename({m_rel: "labels"}, axis=1, inplace=True)
+        dataset.drop(m_rel, axis=1, inplace=True)
 
     dataset.rename({i: "rel{}".format(i) for i in range(m_rel)}, axis=1, inplace=True)
 
@@ -325,16 +366,20 @@ def generate(shape: str, m_rel: int, m_irr: int, m_red: int, q: int, n: int, max
     np.random.seed(cantor_pairing(random_state, 1))
     dataset = dataset[np.random.permutation(dataset.columns)]
 
-    noisy_labels = add_noise(labels.copy(), noise_levels, q)
+    if not singlelabel:
+        noisy_labels = add_noise_multilabel(labels.copy(), noise_levels, q)
+    else:
+        noisy_labels = add_noise_singlelabel(labels.copy(), noise_levels, q)
 
     if save_dir:
+        sl_ml = "sl" if singlelabel else "ml"
         Path(save_dir).mkdir(parents=True, exist_ok=True)
-        with open("{}/{}_{}_dataset.csv".format(save_dir, name.lower(), shape), "w")as file:
+        with open("{}/{}_{}_{}_dataset.csv".format(save_dir, name.lower(), shape, sl_ml), "w")as file:
             dataset.to_csv(file, index=False)
-        with open("{}/{}_{}_labels.csv".format(save_dir, name.lower(), shape), "w")as file:
+        with open("{}/{}_{}_{}_labels.csv".format(save_dir, name.lower(), shape, sl_ml), "w")as file:
             labels.to_csv(file, index=False)
         for ind, noise_level in enumerate(noisy_labels):
-            with open("{}/{}_{}_n{}_labels.csv".format(save_dir, name.lower(), shape, ind), "w")as file:
+            with open("{}/{}_{}_{}_n{}_labels.csv".format(save_dir, name.lower(), shape, sl_ml, ind), "w")as file:
                 noise_level.to_csv(file, index=False)
 
     return dataset, labels, noisy_labels
@@ -346,3 +391,9 @@ if __name__ == "__main__":
                                              "ml_datagen")
     dataset, labels, noisy_labels = generate("spheres", 4, 3, 2, 3, 100, None, None, [], "Test", None, None,
                                              "ml_datagen")
+
+    dataset, labels, noisy_labels = generate("cubes", 2, 0, 0, 5, 10000, 0.4, 0.2, [0.1, 0.2, 0.5], "Test", None, None,
+                                             "ml_datagen", singlelabel=True)
+
+    dataset, labels, noisy_labels = generate("spheres", 2, 0, 0, 5, 10000, 0.4, 0.2, [], "Test", None, None,
+                                             "ml_datagen", singlelabel=True)
