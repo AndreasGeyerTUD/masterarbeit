@@ -5,9 +5,74 @@ from typing import Union, Tuple
 
 import numpy as np
 import pandas as pd
+from matplotlib import pyplot as plt
+
+from scipy.spatial.distance import euclidean
+from scipy.special import gamma, betainc
 
 
-def generate_small_hypershapes(m_rel: int, q: int, max_r: float, min_r: float, hyperspheres: bool) -> list[Tuple[float, list[float]]]:
+def calc_iou(hs, new_hs, m_rel) -> list[float]:
+    if hs is None or not hs:
+        return [-1]
+
+    ious = []
+    new_r, new_c = new_hs
+    new_v = calc_volume(new_r, m_rel)
+
+    for r, c in hs:
+        intersection = calc_intersection_volume(c, r, new_c, new_r, m_rel)
+        volume = calc_volume(r, m_rel)
+        if intersection == -1: intersection = min(volume, new_v)
+        union = volume + new_v - intersection
+
+        # if intersection / union == 0:
+        #     print()
+
+        ious.append(intersection / union)
+
+    return ious
+
+
+def calc_intersection_volume(center_1: list[float], r_1: float, center_2: list[float], r_2: float, n: int) -> float:
+    d = euclidean(center_1, center_2)
+
+    if d >= r_1 + r_2:
+        return 0
+    elif d <= abs(r_1 - r_2):
+        return -1
+    else:
+        c_1 = ((d ** 2) + (r_1 ** 2) - (r_2 ** 2)) / (2 * d)
+        c_2 = ((d ** 2) - (r_1 ** 2) + (r_2 ** 2)) / (2 * d)
+        return calc_cap_volume(r_1, c_1, n) + calc_cap_volume(r_2, c_2, n)
+
+
+def calc_cap_volume(r: float, c: float, n: int):
+    term = (math.pi ** (n / 2) * r ** n) / gamma((n / 2) + 1)
+    if c < 0:
+        return term - calc_cap_volume(r, -c, n)
+    else:
+        a = (n + 1) / 2
+        x = 1 - ((c ** 2) / (r ** 2))
+        return 0.5 * term * betainc(a, 0.5, x)
+
+
+def calc_volume(r: float, n: int) -> float:
+    return (math.pi ** (n / 2) * r ** n) / gamma((n / 2) + 1)
+
+
+def iou_matrix(hs, m_rel):
+    result = np.zeros((len(hs), len(hs)))
+    for i, h_i in enumerate(hs):
+        for j, h_j in enumerate(hs):
+            if i <= j:
+                continue
+            result[i][j] = calc_iou([h_i], h_j, m_rel)[0]
+
+    print(result)
+
+
+def generate_small_hypershapes(m_rel: int, q: int, max_r: float, min_r: float, hyperspheres: bool,
+                               iou_threshold: Union[float, list[float]] = None) -> list[Tuple[float, list[float]]]:
     """
     As this generator is based on hypercubes and hyperspheres one needs to generate small hypercubes/spheres which will
     later contain the points.
@@ -49,8 +114,21 @@ def generate_small_hypershapes(m_rel: int, q: int, max_r: float, min_r: float, h
 
             if hyperspheres:
                 if np.sum(np.square(c_i)) <= (1 - r) ** 2:
-                    hs.append((r, c_i))
-                    break
+                    if iou_threshold is not None:
+                        ious = [calc_iou([h], c_i, m_rel)[0] for h in hs]
+                        # ious = calc_iou(hs, c_i, m_rel)
+                        #TODO threshold is not applied correct
+                        if isinstance(iou_threshold, float):
+                            if all([iou <= iou_threshold or iou == -1 for iou in ious]):
+                                hs.append((r, c_i))
+                                break
+                        elif isinstance(iou_threshold, list):
+                            if all([iou_threshold[0] <= iou <= iou_threshold[1] or iou == -1 for iou in ious]):
+                                hs.append((r, c_i))
+                                break
+                    else:
+                        hs.append((r, c_i))
+                        break
             else:
                 hs.append((r, c_i))
                 break
@@ -58,10 +136,13 @@ def generate_small_hypershapes(m_rel: int, q: int, max_r: float, min_r: float, h
             l += 1
             if l > 100000: raise TimeoutError("After 100000 executions the stopping condition wasn't met!")
 
+    iou_matrix(hs, m_rel)
+
     return hs
 
 
-def generate_points_inside_hypershape(m_rel: int, n: int, c: list[float], r: float, hyperspheres: bool) -> list[list[float]]:
+def generate_points_inside_hypershape(m_rel: int, n: int, c: list[float], r: float, hyperspheres: bool) -> list[
+    list[float]]:
     """
     Populating the beforehand created hypershapes (cubes and spheres) with points (evenly distributed). This function
     populates one given hypershape. So, you have to execute it for every hypershape.
@@ -225,8 +306,8 @@ def add_noise_singlelabel(labels: pd.DataFrame, noise_levels: Union[list[float],
 
 def generate(shape: str, m_rel: int, m_irr: int, m_red: int, q: int, n: int, max_r: float = None, min_r: float = None,
              noise_levels: [float] = None, name: str = "Dataset test", random_state: int = None,
-             points_distribution: str = None, save_dir: str = None, singlelabel: bool = False) \
-        -> Tuple[pd.DataFrame, pd.DataFrame, list[pd.DataFrame]]:
+             points_distribution: str = None, save_dir: str = None, singlelabel: bool = False,
+             iou_threshold: Union[float, list[float]] = None) -> Tuple[pd.DataFrame, pd.DataFrame, list[pd.DataFrame]]:
     """
     The coordination function for generating the synthetic dataset with the given parameters.
 
@@ -284,7 +365,7 @@ def generate(shape: str, m_rel: int, m_irr: int, m_red: int, q: int, n: int, max
     random.seed(random_state)
     np.random.seed(random_state)
 
-    hypershapes = generate_small_hypershapes(m_rel, q, max_r, min_r, shape == "spheres")
+    hypershapes = generate_small_hypershapes(m_rel, q, max_r, min_r, shape == "spheres", iou_threshold)
 
     if points_distribution == "uniform":
         ns = [int(n / q)] * q
