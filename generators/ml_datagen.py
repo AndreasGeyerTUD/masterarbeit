@@ -7,20 +7,7 @@ import numpy as np
 import pandas as pd
 
 
-def cantor_pairing(x: int, y: int = 0) -> Union[int, None]:
-    """
-    Calculating Cantor Pairing function (https://en.wikipedia.org/wiki/Pairing_function) for seeding random states.
-    :param x: Should be the random state. If not given, the function returns None.
-    :param y: Any other value you want to pair your random state with.
-    :return: The pairing of the two given values.
-    """
-
-    if x is None: return None
-    return int((((x + y) * (x + y + 1)) / 2) + y)
-
-
-def generate_small_hypershapes(m_rel: int, q: int, max_r: float, min_r: float, hyperspheres: bool,
-                               random_state: int = None) -> list[Tuple[float, list[float]]]:
+def generate_small_hypershapes(m_rel: int, q: int, max_r: float, min_r: float, hyperspheres: bool) -> list[Tuple[float, list[float]]]:
     """
     As this generator is based on hypercubes and hyperspheres one needs to generate small hypercubes/spheres which will
     later contain the points.
@@ -33,8 +20,6 @@ def generate_small_hypershapes(m_rel: int, q: int, max_r: float, min_r: float, h
     :param max_r: The maximal radius for spheres or half-edge for cubes.
     :param min_r: The minimal radius for spheres or half-edge for cubes.
     :param hyperspheres: Whether to create hyperspheres (True) or hypercubes (False).
-    :param random_state: The random state to use. For determinism. This is paired (Cantor Pairing) with another value
-        for the random seed.
     :return: The list of hypershapes containing a tuple of the radius/half-edge and the shape center (list of m_rel
         values)
     """
@@ -42,18 +27,15 @@ def generate_small_hypershapes(m_rel: int, q: int, max_r: float, min_r: float, h
     hs = []
     for i in range(q):
         c_i = [0] * m_rel
-        random.seed(cantor_pairing(random_state, i))
         r = (random.random() * (max_r - min_r)) + min_r
         max_c = 1 - r
         min_c = - max_c
 
         l = 0
         while True:
-            np.random.seed(cantor_pairing(random_state, l))
             for j in np.random.permutation(m_rel):
                 k = 0
                 while True:
-                    random.seed(cantor_pairing(random_state, cantor_pairing(k, j)))
                     c = (random.random() * (max_c - min_c)) + min_c
                     if hyperspheres:
                         upper_bound = math.sqrt(((1 - r) ** 2) - np.sum(np.square(c_i)))
@@ -79,8 +61,7 @@ def generate_small_hypershapes(m_rel: int, q: int, max_r: float, min_r: float, h
     return hs
 
 
-def generate_points_inside_hypershape(m_rel: int, n: int, c: list[float], r: float, hyperspheres: bool,
-                                      random_state: int = None) -> list[list[float]]:
+def generate_points_inside_hypershape(m_rel: int, n: int, c: list[float], r: float, hyperspheres: bool) -> list[list[float]]:
     """
     Populating the beforehand created hypershapes (cubes and spheres) with points (evenly distributed). This function
     populates one given hypershape. So, you have to execute it for every hypershape.
@@ -90,8 +71,6 @@ def generate_points_inside_hypershape(m_rel: int, n: int, c: list[float], r: flo
     :param c: The center of the hypershape to populate.
     :param r: The radius/half-edge of the hypershape to populate.
     :param hyperspheres: Whether to populate hyperspheres (True) or hypercubes (False).
-    :param random_state: The random state to use. For determinism. This is paired (Cantor Pairing) with another value
-        for the random seed.
     :return: A list of m_rel dimensional points for one hypershape. Every point is a list of m_rel values between -1
         and 1 (and inside of the hypershape).
     """
@@ -101,13 +80,11 @@ def generate_points_inside_hypershape(m_rel: int, n: int, c: list[float], r: flo
     for i in range(n):
         x_i = [0] * m_rel
 
-        np.random.seed(cantor_pairing(random_state, i))
         for j in np.random.permutation(m_rel):
             max_x = c[j] + r
             min_x = c[j] - r
             k = 0
             while True:
-                random.seed(cantor_pairing(random_state, cantor_pairing(i, j)))
                 x = (random.random() * (max_x - min_x)) + min_x
                 if hyperspheres:
                     if abs(x - c[j]) > r: continue
@@ -155,45 +132,37 @@ def add_redundant(dataset: pd.DataFrame, m_red: int, random_state: int = None) -
 
     :param dataset: The dataset (containing only the relevant features) as pandas.DataFrame.
     :param m_red: The number of redundant features to create.
-    :param random_state: The random state to use. For determinism. This is paired (Cantor Pairing) with another value
-        for the random seed.
+    :param random_state: The random state to use. For determinism.
     :return: The pandas.DataFrame dataset extended with the newly created redundant features.
     """
 
     red = dataset.sample(n=m_red, axis='columns', random_state=random_state)
 
     for i, column in enumerate(red):
-        random.seed(cantor_pairing(random_state, i))
         rand = random.random()
         dataset["red{}".format(i)] = red[column] * (rand if rand > 0 else 1)
 
     return dataset
 
 
-def add_irrelevant(dataset: pd.DataFrame, m_irr: int, random_state: int = None) -> pd.DataFrame:
+def add_irrelevant(dataset: pd.DataFrame, m_irr: int) -> pd.DataFrame:
     """
     Adding irrelevant features. These are columns filled with random values.
 
     :param dataset: The dataset (containing only the relevant and redundant features) as pandas.DataFrame.
     :param m_irr: The number of irrelevant features to create.
-    :param random_state: The random state to use. For determinism. This is paired (Cantor Pairing) with another value
-        for the random seed.
     :return: The pandas.DataFrame dataset extended with the newly created irrelevant features.
     """
 
     for i in range(m_irr):
-        cp = cantor_pairing(random_state, i)
-        np.random.seed(cp)
         rand_list = np.random.rand(len(dataset))
-        random.seed(cp)
         rand = random.random()
         dataset["irr{}".format(i)] = (rand_list - rand)
 
     return dataset
 
 
-def add_noise_multilabel(labels: pd.DataFrame, noise_levels: Union[list[float], None], q: int, random_state: int = None) \
-        -> list[pd.DataFrame]:
+def add_noise_multilabel(labels: pd.DataFrame, noise_levels: Union[list[float], None], q: int) -> list[pd.DataFrame]:
     """
     Create noisy labels for multilabel. The defined noise_levels tell with which probability a point changes a label.
 
@@ -204,8 +173,6 @@ def add_noise_multilabel(labels: pd.DataFrame, noise_levels: Union[list[float], 
     :param noise_levels: A list with the probability that the labels switch. 3 entries for example cause 3 different
         results.
     :param q: The number of possible labels. This is used for naming the columns of the new noisy labels DataFrame.
-    :param random_state: The random state to use. For determinism. This is paired (Cantor Pairing) with another value
-        for the random seed.
     :return: A list containing as many pandas.DataFrame (labels) as there are entries in noise_levels.
     """
 
@@ -217,7 +184,6 @@ def add_noise_multilabel(labels: pd.DataFrame, noise_levels: Union[list[float], 
             for j, label in enumerate(labels.values):
                 new_values = []
                 for k, val in enumerate(label):
-                    random.seed(cantor_pairing(random_state, cantor_pairing(k, cantor_pairing(i, j))))
                     rand = random.random()
                     if rand < noise:
                         val = (val + 1) % 2
@@ -228,8 +194,7 @@ def add_noise_multilabel(labels: pd.DataFrame, noise_levels: Union[list[float], 
     return noisy_labels
 
 
-def add_noise_singlelabel(labels: pd.DataFrame, noise_levels: Union[list[float], None], q: int,
-                          random_state: int = None) -> list[pd.DataFrame]:
+def add_noise_singlelabel(labels: pd.DataFrame, noise_levels: Union[list[float], None], q: int) -> list[pd.DataFrame]:
     """
     Create noisy labels for singlelabel. The defined noise_levels tell with which probability a point changes its label.
 
@@ -240,8 +205,6 @@ def add_noise_singlelabel(labels: pd.DataFrame, noise_levels: Union[list[float],
     :param noise_levels: A list with the probability that the labels switch. 3 entries for example cause 3 different
         results.
     :param q: The number of possible labels.
-    :param random_state: The random state to use. For determinism. This is paired (Cantor Pairing) with another value
-        for the random seed.
     :return: A list containing as many pandas.DataFrame (labels) as there are entries in noise_levels.
     """
 
@@ -250,10 +213,8 @@ def add_noise_singlelabel(labels: pd.DataFrame, noise_levels: Union[list[float],
         for i, noise in enumerate(noise_levels):
             new_labels = []
             for label in labels.values:
-                random.seed(cantor_pairing(random_state, cantor_pairing(i, label)))
                 rand = random.random()
                 if rand < noise:
-                    random.seed(cantor_pairing(random_state, cantor_pairing(label, i)))
                     rand = round(random.random() * q)
                     label = (label + rand) % q
                 new_labels.append(label)
@@ -320,7 +281,10 @@ def generate(shape: str, m_rel: int, m_irr: int, m_red: int, q: int, n: int, max
     if min_r >= max_r > 0.8:
         raise ValueError("min_r < max_r <= 0.8 is required!")
 
-    hypershapes = generate_small_hypershapes(m_rel, q, max_r, min_r, shape == "spheres", random_state)
+    random.seed(random_state)
+    np.random.seed(random_state)
+
+    hypershapes = generate_small_hypershapes(m_rel, q, max_r, min_r, shape == "spheres")
 
     if points_distribution == "uniform":
         ns = [int(n / q)] * q
@@ -342,7 +306,7 @@ def generate(shape: str, m_rel: int, m_irr: int, m_red: int, q: int, n: int, max
 
     dataset = []
     for idx, (size, (r, c)) in enumerate(zip(ns, hypershapes)):
-        points = generate_points_inside_hypershape(m_rel, size, c, r, shape == "spheres", random_state)
+        points = generate_points_inside_hypershape(m_rel, size, c, r, shape == "spheres")
         for point in points:
             if singlelabel:
                 point.append(idx)
@@ -361,9 +325,8 @@ def generate(shape: str, m_rel: int, m_irr: int, m_red: int, q: int, n: int, max
 
     dataset = add_redundant(dataset, m_red, random_state)
 
-    dataset = add_irrelevant(dataset, m_irr, random_state)
+    dataset = add_irrelevant(dataset, m_irr)
 
-    np.random.seed(cantor_pairing(random_state, 1))
     dataset = dataset[np.random.permutation(dataset.columns)]
 
     if not singlelabel:
@@ -372,28 +335,28 @@ def generate(shape: str, m_rel: int, m_irr: int, m_red: int, q: int, n: int, max
         noisy_labels = add_noise_singlelabel(labels.copy(), noise_levels, q)
 
     if save_dir:
-        sl_ml = "sl" if singlelabel else "ml"
+        save_dir += "/sl" if singlelabel else "/ml"
         Path(save_dir).mkdir(parents=True, exist_ok=True)
-        with open("{}/{}_{}_{}_dataset.csv".format(save_dir, name.lower(), shape, sl_ml), "w")as file:
+        with open("{}/{}_{}_dataset.csv".format(save_dir, name.lower(), shape), "w")as file:
             dataset.to_csv(file, index=False)
-        with open("{}/{}_{}_{}_labels.csv".format(save_dir, name.lower(), shape, sl_ml), "w")as file:
+        with open("{}/{}_{}_labels.csv".format(save_dir, name.lower(), shape), "w")as file:
             labels.to_csv(file, index=False)
         for ind, noise_level in enumerate(noisy_labels):
-            with open("{}/{}_{}_{}_n{}_labels.csv".format(save_dir, name.lower(), shape, sl_ml, ind), "w")as file:
+            with open("{}/{}_{}_n{}_labels.csv".format(save_dir, name.lower(), shape, ind), "w")as file:
                 noise_level.to_csv(file, index=False)
 
     return dataset, labels, noisy_labels
 
 
 if __name__ == "__main__":
-    # Todo: check what's the reason for not working with random_state set
-    dataset, labels, noisy_labels = generate("cubes", 4, 3, 2, 3, 100, None, None, [0.1, 0.2, 0.5], "Test", None, None,
-                                             "ml_datagen")
-    dataset, labels, noisy_labels = generate("spheres", 4, 3, 2, 3, 100, None, None, [], "Test", None, None,
+    dataset, labels, noisy_labels = generate("cubes", 4, 3, 2, 3, 100, None, None, [0.1, 0.2, 0.5], "Test", 0, None,
                                              "ml_datagen")
 
-    dataset, labels, noisy_labels = generate("cubes", 2, 0, 0, 5, 10000, 0.4, 0.2, [0.1, 0.2, 0.5], "Test", None, None,
+    dataset, labels, noisy_labels = generate("spheres", 4, 3, 2, 3, 100, None, None, [], "Test", 0, None,
+                                             "ml_datagen")
+
+    dataset, labels, noisy_labels = generate("cubes", 2, 0, 0, 5, 10000, 0.4, 0.2, [0.1, 0.2, 0.5], "Test", 0, None,
                                              "ml_datagen", singlelabel=True)
 
-    dataset, labels, noisy_labels = generate("spheres", 2, 0, 0, 5, 10000, 0.4, 0.2, [], "Test", None, None,
+    dataset, labels, noisy_labels = generate("spheres", 2, 0, 0, 5, 10000, 0.4, 0.2, [], "Test", 0, None,
                                              "ml_datagen", singlelabel=True)
