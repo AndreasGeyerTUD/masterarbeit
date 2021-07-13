@@ -278,13 +278,18 @@ def generate_small_hypershapes(m_rel: int, q: int, max_r: float, min_r: float, h
             l += 1
             if l > 100000: raise TimeoutError("After 100000 executions the stopping condition wasn't met!")
 
-    _print_iou_matrix(hs, m_rel, hyperspheres)
+    # _print_iou_matrix(hs, m_rel, hyperspheres)
 
     return hs
 
 
-def generate_points_inside_hypershape(m_rel: int, n: int, c: list[float], r: float, hyperspheres: bool) -> list[
-    list[float]]:
+def move_point(point: list[float], mov_vector: list[float]):
+    return (np.array(point) + (
+            (mov_vector * np.random.rand(len(point))) * random.choice(np.arange(-1, 1.1, 0.01)))).tolist()
+
+
+def generate_points_inside_hypershape(m_rel: int, n: int, c: list[float], r: float, hyperspheres: bool,
+                                      mov_vector: list[float] = None) -> list[list[float]]:
     """
     Populating the beforehand created hypershapes (cubes and spheres) with points (evenly distributed). This function
     populates one given hypershape. So, you have to execute it for every hypershape.
@@ -320,6 +325,9 @@ def generate_points_inside_hypershape(m_rel: int, n: int, c: list[float], r: flo
                 if k > 100000: raise TimeoutError("After 100000 executions the stopping condition wasn't met!")
 
             x_i[j] = x
+
+        if mov_vector is not None:
+            x_i = move_point(x_i, mov_vector)
 
         xs.append(x_i)
 
@@ -449,7 +457,8 @@ def add_noise_singlelabel(labels: pd.DataFrame, noise_levels: Union[list[float],
 def generate(shape: str, m_rel: int, m_irr: int, m_red: int, q: int, n: int, max_r: float = None, min_r: float = None,
              noise_levels: [float] = None, name: str = "Dataset test", random_state: int = None,
              points_distribution: str = None, save_dir: str = None, singlelabel: bool = False,
-             iou_threshold: Union[float, list[float]] = None) -> Tuple[pd.DataFrame, pd.DataFrame, list[pd.DataFrame]]:
+             iou_threshold: Union[float, list[float]] = None, mov_vectors: list[list[float]] = None) \
+        -> Tuple[pd.DataFrame, pd.DataFrame, list[pd.DataFrame]]:
     """
     The coordination function for generating the synthetic dataset with the given parameters.
 
@@ -536,7 +545,7 @@ def generate(shape: str, m_rel: int, m_irr: int, m_red: int, q: int, n: int, max
 
     dataset = []
     for idx, (size, (r, c)) in enumerate(zip(ns, hypershapes)):
-        points = generate_points_inside_hypershape(m_rel, size, c, r, shape == "spheres")
+        points = generate_points_inside_hypershape(m_rel, size, c, r, shape == "spheres", random.choice(mov_vectors) if mov_vectors is not None else None)
         for point in points:
             if singlelabel:
                 point.append(idx)
@@ -583,8 +592,8 @@ def plot_sl(dataset, labels):
     ax = fig.add_subplot(111)
     x = dataset["rel0"]
     y = dataset["rel1"]
-    plt.xlim(-1, 1)
-    plt.ylim(-1, 1)
+    plt.xlim(-2, 2)
+    plt.ylim(-2, 2)
     ax.set_aspect('equal', adjustable='box')
     plt.scatter(x, y, c=labels.values)
     plt.show()
@@ -602,31 +611,33 @@ if __name__ == "__main__":
     #
     # dataset, labels, noisy_labels = generate("spheres", 2, 0, 0, 5, 10000, 0.4, 0.2, [], "Test", 0, None,
     #                                          "ml_datagen", singlelabel=True)
+    #
+    # dataset, labels, noisy_labels = generate("cubes", 2, 0, 0, 5, 10000, 0.4, 0.2, [], "Test", 2, None,
+    #                                          "ml_datagen", singlelabel=True)
+    #
+    # plot_sl(dataset, labels)
 
-    dataset, labels, noisy_labels = generate("cubes", 2, 0, 0, 5, 10000, 0.4, 0.2, [], "Test", 2, None,
-                                             "ml_datagen", singlelabel=True)
-
-    dataset, labels, noisy_labels = generate("cubes", 2, 0, 0, 5, 10000, 0.4, 0.2, [], "Test", 2, None,
-                                             "ml_datagen", singlelabel=True, iou_threshold=0.3)
-
-    plot_sl(dataset, labels)
-
-    dataset, labels, noisy_labels = generate("cubes", 2, 0, 0, 5, 10000, 0.4, 0.2, [], "Test", 2, None,
-                                             "ml_datagen", singlelabel=True, iou_threshold=[0.1, 0.4])
+    dataset, labels, noisy_labels = generate("spheres", 2, 0, 0, 5, 10000, 0.3, 0.1, [], "Test", 3, None,
+                                             "ml_datagen", singlelabel=True, iou_threshold=0.3, mov_vectors=[[-.2, .6], [.7, .7], [-.7, .3], [.3, .8]])
 
     plot_sl(dataset, labels)
 
-    dataset, labels, noisy_labels = generate("spheres", 2, 0, 0, 5, 10000, 0.4, 0.2, [], "Test", 2, None,
-                                             "ml_datagen", singlelabel=True)
-
-    plot_sl(dataset, labels)
-
-    dataset, labels, noisy_labels = generate("spheres", 2, 0, 0, 5, 10000, 0.4, 0.2, [], "Test", 2, None,
-                                             "ml_datagen", singlelabel=True, iou_threshold=0.3)
-
-    plot_sl(dataset, labels)
-
-    dataset, labels, noisy_labels = generate("spheres", 2, 0, 0, 5, 10000, 0.4, 0.2, [], "Test", 2, None,
-                                             "ml_datagen", singlelabel=True, iou_threshold=[0.1, 0.4])
-
-    plot_sl(dataset, labels)
+    # dataset, labels, noisy_labels = generate("cubes", 2, 0, 0, 5, 10000, 0.4, 0.2, [], "Test", 2, None,
+    #                                          "ml_datagen", singlelabel=True, iou_threshold=[0.1, 0.4])
+    #
+    # plot_sl(dataset, labels)
+    #
+    # dataset, labels, noisy_labels = generate("spheres", 2, 0, 0, 5, 10000, 0.4, 0.2, [], "Test", 2, None,
+    #                                          "ml_datagen", singlelabel=True)
+    #
+    # plot_sl(dataset, labels)
+    #
+    # dataset, labels, noisy_labels = generate("spheres", 2, 0, 0, 5, 10000, 0.4, 0.2, [], "Test", 2, None,
+    #                                          "ml_datagen", singlelabel=True, iou_threshold=0.3)
+    #
+    # plot_sl(dataset, labels)
+    #
+    # dataset, labels, noisy_labels = generate("spheres", 2, 0, 0, 5, 10000, 0.4, 0.2, [], "Test", 2, None,
+    #                                          "ml_datagen", singlelabel=True, iou_threshold=[0.1, 0.4])
+    #
+    # plot_sl(dataset, labels)
