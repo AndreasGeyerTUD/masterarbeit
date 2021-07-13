@@ -11,29 +11,50 @@ from scipy.spatial.distance import euclidean
 from scipy.special import gamma, betainc
 
 
-def calc_iou(hs, new_hs, m_rel) -> list[float]:
+def calc_hypersphere_iou(hs: list[Tuple[float, list[float]]], new_hs: Tuple[float, list[float]], m_rel: int) \
+        -> list[float]:
+    """
+    As the name suggest this method calculates the n-dimensional Intersection over Union (IoU). This value is as exact
+    as it gets. For each element in hs the IoU with the new_hs is calculated.
+
+    :param hs: A list of hyperspheres containing tuple of radius and corresponding center-points.
+    :param new_hs: The reference hypersphere. For every element of hs the IoU with this hypersphere is calculated. It
+        is a tuple of radius and center-point.
+    :param m_rel: The number of relevant features to create. Is used to determine the dimensionality of the hypershape.
+    :return: A list of IoUs in the same order as hs. So, for every element of hs there is the IoU with new_hs.
+    """
+
     if hs is None or len(hs) == 0 or not hs:
         return [-1]
 
     ious = []
     new_r, new_c = new_hs
-    new_v = calc_volume(new_r, m_rel)
+    new_v = calc_hypersphere_volume(new_r, m_rel)
 
     for r, c in hs:
-        intersection = calc_intersection_volume(c, r, new_c, new_r, m_rel)
-        volume = calc_volume(r, m_rel)
+        intersection = calc_hypersphere_intersection_volume(c, r, new_c, new_r, m_rel)
+        volume = calc_hypersphere_volume(r, m_rel)
         if intersection == -1: intersection = min(volume, new_v)
         union = volume + new_v - intersection
-
-        # if intersection / union == 0:
-        #     print()
 
         ious.append(intersection / union)
 
     return ious
 
 
-def calc_intersection_volume(center_1: list[float], r_1: float, center_2: list[float], r_2: float, n: int) -> float:
+def calc_hypersphere_intersection_volume(center_1: list[float], r_1: float, center_2: list[float], r_2: float,
+                                         n: int) -> float:
+    """
+    This method calculates the intersection of two given Hyperspheres.
+
+    :param center_1: The center-point of the first Hypersphere.
+    :param r_1: The radius of the first Hypersphere.
+    :param center_2: The center-point of the second Hypersphere.
+    :param r_2: The radius of the second Hypersphere.
+    :param n: The dimension of the Hyperspheres.
+    :return: A value for the intersection of the two given Hyperspheres.
+    """
+
     d = euclidean(center_1, center_2)
 
     if d >= r_1 + r_2:
@@ -43,36 +64,71 @@ def calc_intersection_volume(center_1: list[float], r_1: float, center_2: list[f
     else:
         c_1 = ((d ** 2) + (r_1 ** 2) - (r_2 ** 2)) / (2 * d)
         c_2 = ((d ** 2) - (r_1 ** 2) + (r_2 ** 2)) / (2 * d)
-        return calc_cap_volume(r_1, c_1, n) + calc_cap_volume(r_2, c_2, n)
+        return calc_hypersphere_cap_volume(r_1, c_1, n) + calc_hypersphere_cap_volume(r_2, c_2, n)
 
 
-def calc_cap_volume(r: float, c: float, n: int):
+def calc_hypersphere_cap_volume(r: float, c: float, n: int):
+    """
+    Calculation of the volume of the actual intersecting hypershape.
+
+    :param r: Radius of the whole Hypersphere.
+    :param c: The c from calc_hypersphere_intersection_volume.
+    :param n: The dimension of the Hypersphere.
+    :return: Volume of the actual intersecting hypershape.
+    """
     term = (math.pi ** (n / 2) * r ** n) / gamma((n / 2) + 1)
     if c < 0:
-        return term - calc_cap_volume(r, -c, n)
+        return term - calc_hypersphere_cap_volume(r, -c, n)
     else:
         a = (n + 1) / 2
         x = 1 - ((c ** 2) / (r ** 2))
         return 0.5 * term * betainc(a, 0.5, x)
 
 
-def calc_volume(r: float, n: int) -> float:
+def calc_hypersphere_volume(r: float, n: int) -> float:
+    """
+    Calculates the volume of a given Hypersphere.
+
+    :param r: The radius of the Hypersphere.
+    :param n: The dimension of the Hypersphere.
+    :return: The volume of the Hypersphere.
+    """
     return (math.pi ** (n / 2) * r ** n) / gamma((n / 2) + 1)
 
 
-def iou_matrix(hs, m_rel, hyperspheres: bool):
+def _print_iou_matrix(hs: list[Tuple[float, list[float]]], m_rel: int, hyperspheres: bool) -> None:
+    """
+    Helper function for printing the half-matrix of the IoU from each Hypershape with each other.
+
+    :param hs: A list of hyperspheres containing tuples of radius and corresponding center-point.
+    :param m_rel: The dimension of the Hypershape.
+    :param hyperspheres: Whether the shape is a Hypersphere (True) or a Hypercube (False).
+    :return: None
+    """
     result = np.zeros((len(hs), len(hs)))
     for i, h_i in enumerate(hs):
         for j, h_j in enumerate(hs):
             if i <= j:
                 continue
-            result[i][j] = calc_iou([h_i], h_j, m_rel)[0] if hyperspheres else \
+            result[i][j] = calc_hypersphere_iou([h_i], h_j, m_rel)[0] if hyperspheres else \
                 approximate_hypercube_iou([h_i], h_j, m_rel)[0]
 
     print(result)
 
 
-def approximate_hypercube_iou(hs, new_hs, m_rel) -> list[float]:
+def approximate_hypercube_iou(hs: list[Tuple[float, list[float]]], new_hs: Tuple[float, list[float]], m_rel: int) \
+        -> list[float]:
+    """
+    As it is non-trivial to calculate the intersection of two Hypercubes, the Intersection and therefore IoU is only
+    an approximation. Tested with several combinations of parameters and the accuracy was sufficient in all cases. To
+    use this method is time consuming with large m_rel.
+
+    :param hs: A list of hyperspheres containing tuples of radius and corresponding center-point.
+    :param new_hs: The reference Hypercube. For every element of hs the IoU with this Hypercube is calculated. It
+        is a tuple of radius and center-point.
+    :param m_rel: The dimension of the Hypercube.
+    :return: A list of IoUs in the same order as hs. So, for every element of hs there is the IoU with new_hs.
+    """
     if hs is None or len(hs) == 0 or not hs:
         return [-1]
 
@@ -106,19 +162,52 @@ def approximate_hypercube_iou(hs, new_hs, m_rel) -> list[float]:
     return result
 
 
-def calc_hypercube_volume(r: float, n: int):
+def calc_hypercube_volume(r: float, n: int) -> float:
+    """
+    Calculates the volume of a given Hypercube.
+
+    :param r: The radius of the Hypercube.
+    :param n: The dimension of the Hypercube.
+    :return: The volume of the Hypercube.
+    """
     return (r * 2) ** n
 
 
-def is_point_inside_hypercube(point: list[float], c: list[float], r: float):
+def is_point_inside_hypercube(point: list[float], c: list[float], r: float) -> bool:
+    """
+    This method checks whether a given point is inside a given Hypercube.
+
+    :param point: The point to check.
+    :param c: The center-point of the Hypercube.
+    :param r: The half-edge-length of the Hypercube.
+    :return: Whether the point is inside or not.
+    """
     diff = np.subtract(point, c)
     return np.all(np.absolute(diff) <= r)
 
 
 def check_iou_threshold(hs: list[Tuple[float, list[float]]], r: float, c_i: list[float], m_rel: int, hyperspheres: bool,
                         iou_threshold: Union[float, list[float]] = None) -> bool:
+    """
+    Check whether the given Hypershape meets the given restrictions for the IoU. To apply iou-restrictions has a high
+    negative impact on the performance of the dataset generation.
+
+    :param hs: A list of hyperspheres containing tuples of radius and corresponding center-point.
+    :param r: The radius/half-edge-length for the Hypershape to test.
+    :param c_i: The center-point for the Hypershape to test.
+    :param m_rel: The dimension of the Hypershape.
+    :param hyperspheres: Whether the Hypershape is a Hypersphere (True) or a Hypercube (False).
+    :param iou_threshold: The restrictions to apply for the IoU. If None than no restrictions are applied. If a single
+        float value, than this is the upper bound of the IoU for every pairing of Hypershapes, so, no Hypershape has an
+        IoU larger than this float value with any other Hypershape. If a list of floats, than this list should contain
+        exactly 2 values. The first value is the lower bound which enforces every Hypershape to have at least this value
+        as IoU with at least one other Hypershape, so, it is possible for two Hypershapes to have no intersection, but
+        it ensures that every Hypershape intersects with at least one other Hypershape. The second value is used as
+        upper bound and in the same way a single float value would be applied.
+    :return: Whether the IoU conditions are met.
+    """
     if iou_threshold is None: return True
-    ious = np.array(calc_iou(hs, (r, c_i), m_rel)) if hyperspheres else np.array(
+    ious = np.array(calc_hypersphere_iou(hs, (r, c_i), m_rel)) if hyperspheres else np.array(
         approximate_hypercube_iou(hs, (r, c_i), m_rel))
     print(ious)
     if np.all(ious == -1): return True
@@ -142,6 +231,13 @@ def generate_small_hypershapes(m_rel: int, q: int, max_r: float, min_r: float, h
     :param max_r: The maximal radius for spheres or half-edge for cubes.
     :param min_r: The minimal radius for spheres or half-edge for cubes.
     :param hyperspheres: Whether to create hyperspheres (True) or hypercubes (False).
+    :param iou_threshold: The restrictions to apply for the IoU. If None than no restrictions are applied. If a single
+        float value, than this is the upper bound of the IoU for every pairing of Hypershapes, so, no Hypershape has an
+        IoU larger than this float value with any other Hypershape. If a list of floats, than this list should contain
+        exactly 2 values. The first value is the lower bound which enforces every Hypershape to have at least this value
+        as IoU with at least one other Hypershape, so, it is possible for two Hypershapes to have no intersection, but
+        it ensures that every Hypershape intersects with at least one other Hypershape. The second value is used as
+        upper bound and in the same way a single float value would be applied.
     :return: The list of hypershapes containing a tuple of the radius/half-edge and the shape center (list of m_rel
         values)
     """
@@ -182,7 +278,7 @@ def generate_small_hypershapes(m_rel: int, q: int, max_r: float, min_r: float, h
             l += 1
             if l > 100000: raise TimeoutError("After 100000 executions the stopping condition wasn't met!")
 
-    iou_matrix(hs, m_rel, hyperspheres)
+    _print_iou_matrix(hs, m_rel, hyperspheres)
 
     return hs
 
@@ -377,6 +473,13 @@ def generate(shape: str, m_rel: int, m_irr: int, m_red: int, q: int, n: int, max
     :param points_distribution: How to distribute the number of points on the different hypershapes. Default is a
         weighted distribution based on the size of the hypershape. Other values are "uniform" for a uniform distribution.
     :param save_dir: The directory where the dataset and the labels should be saved.
+    :param iou_threshold: The restrictions to apply for the IoU. If None than no restrictions are applied. If a single
+        float value, than this is the upper bound of the IoU for every pairing of Hypershapes, so, no Hypershape has an
+        IoU larger than this float value with any other Hypershape. If a list of floats, than this list should contain
+        exactly 2 values. The first value is the lower bound which enforces every Hypershape to have at least this value
+        as IoU with at least one other Hypershape, so, it is possible for two Hypershapes to have no intersection, but
+        it ensures that every Hypershape intersects with at least one other Hypershape. The second value is used as
+        upper bound and in the same way a single float value would be applied.
     :return: A tuple containing the created dataset, the corresponding labels (without noise) and a list containing the
         noisy labels (one pandas.DataFrame of labels for every noise level).
     """
@@ -475,6 +578,18 @@ def generate(shape: str, m_rel: int, m_irr: int, m_red: int, q: int, n: int, max
     return dataset, labels, noisy_labels
 
 
+def plot_sl(dataset, labels):
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    x = dataset["rel0"]
+    y = dataset["rel1"]
+    plt.xlim(-1, 1)
+    plt.ylim(-1, 1)
+    ax.set_aspect('equal', adjustable='box')
+    plt.scatter(x, y, c=labels.values)
+    plt.show()
+
+
 if __name__ == "__main__":
     # dataset, labels, noisy_labels = generate("cubes", 4, 3, 2, 3, 100, None, None, [0.1, 0.2, 0.5], "Test", 0, None,
     #                                          "ml_datagen")
@@ -491,76 +606,27 @@ if __name__ == "__main__":
     dataset, labels, noisy_labels = generate("cubes", 2, 0, 0, 5, 10000, 0.4, 0.2, [], "Test", 2, None,
                                              "ml_datagen", singlelabel=True)
 
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
-    x = dataset["rel0"]
-    y = dataset["rel1"]
-    plt.xlim(-1, 1)
-    plt.ylim(-1, 1)
-    ax.set_aspect('equal', adjustable='box')
-    plt.scatter(x, y, c=labels.values)
-    plt.show()
-
     dataset, labels, noisy_labels = generate("cubes", 2, 0, 0, 5, 10000, 0.4, 0.2, [], "Test", 2, None,
                                              "ml_datagen", singlelabel=True, iou_threshold=0.3)
 
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
-    x = dataset["rel0"]
-    y = dataset["rel1"]
-    plt.xlim(-1, 1)
-    plt.ylim(-1, 1)
-    ax.set_aspect('equal', adjustable='box')
-    plt.scatter(x, y, c=labels.values)
-    plt.show()
+    plot_sl(dataset, labels)
 
     dataset, labels, noisy_labels = generate("cubes", 2, 0, 0, 5, 10000, 0.4, 0.2, [], "Test", 2, None,
                                              "ml_datagen", singlelabel=True, iou_threshold=[0.1, 0.4])
 
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
-    x = dataset["rel0"]
-    y = dataset["rel1"]
-    plt.xlim(-1, 1)
-    plt.ylim(-1, 1)
-    ax.set_aspect('equal', adjustable='box')
-    plt.scatter(x, y, c=labels.values)
-    plt.show()
+    plot_sl(dataset, labels)
 
     dataset, labels, noisy_labels = generate("spheres", 2, 0, 0, 5, 10000, 0.4, 0.2, [], "Test", 2, None,
                                              "ml_datagen", singlelabel=True)
 
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
-    x = dataset["rel0"]
-    y = dataset["rel1"]
-    plt.xlim(-1, 1)
-    plt.ylim(-1, 1)
-    ax.set_aspect('equal', adjustable='box')
-    plt.scatter(x, y, c=labels.values)
-    plt.show()
+    plot_sl(dataset, labels)
+
     dataset, labels, noisy_labels = generate("spheres", 2, 0, 0, 5, 10000, 0.4, 0.2, [], "Test", 2, None,
                                              "ml_datagen", singlelabel=True, iou_threshold=0.3)
 
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
-    x = dataset["rel0"]
-    y = dataset["rel1"]
-    plt.xlim(-1, 1)
-    plt.ylim(-1, 1)
-    ax.set_aspect('equal', adjustable='box')
-    plt.scatter(x, y, c=labels.values)
-    plt.show()
+    plot_sl(dataset, labels)
 
     dataset, labels, noisy_labels = generate("spheres", 2, 0, 0, 5, 10000, 0.4, 0.2, [], "Test", 2, None,
                                              "ml_datagen", singlelabel=True, iou_threshold=[0.1, 0.4])
 
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
-    x = dataset["rel0"]
-    y = dataset["rel1"]
-    plt.xlim(-1, 1)
-    plt.ylim(-1, 1)
-    ax.set_aspect('equal', adjustable='box')
-    plt.scatter(x, y, c=labels.values)
-    plt.show()
+    plot_sl(dataset, labels)
