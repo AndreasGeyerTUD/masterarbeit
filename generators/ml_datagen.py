@@ -12,7 +12,7 @@ from scipy.special import gamma, betainc
 
 
 def calc_iou(hs, new_hs, m_rel) -> list[float]:
-    if hs is None or not hs:
+    if hs is None or len(hs) == 0 or not hs:
         return [-1]
 
     ious = []
@@ -60,15 +60,72 @@ def calc_volume(r: float, n: int) -> float:
     return (math.pi ** (n / 2) * r ** n) / gamma((n / 2) + 1)
 
 
-def iou_matrix(hs, m_rel):
+def iou_matrix(hs, m_rel, hyperspheres: bool):
     result = np.zeros((len(hs), len(hs)))
     for i, h_i in enumerate(hs):
         for j, h_j in enumerate(hs):
             if i <= j:
                 continue
-            result[i][j] = calc_iou([h_i], h_j, m_rel)[0]
+            result[i][j] = calc_iou([h_i], h_j, m_rel)[0] if hyperspheres else \
+                approximate_hypercube_iou([h_i], h_j, m_rel)[0]
 
     print(result)
+
+
+def approximate_hypercube_iou(hs, new_hs, m_rel) -> list[float]:
+    if hs is None or len(hs) == 0 or not hs:
+        return [-1]
+
+    number_rand_points = 10000 * m_rel
+
+    inside_ref = [0] * len(hs)
+
+    new_r, new_c = new_hs
+    new_v = calc_hypercube_volume(new_r, m_rel)
+
+    for i, (r, c) in enumerate(hs):
+        j = 0
+        while j < number_rand_points:
+            max_x = np.array(c) + r
+            min_x = np.array(c) - r
+            p = np.random.rand(m_rel) * (max_x - min_x) + min_x
+            p_inside_hc = is_point_inside_hypercube(p, c, r)
+            if p_inside_hc:
+                j += 1
+            if p_inside_hc and is_point_inside_hypercube(p, new_c, new_r):
+                inside_ref[i] += 1
+
+    result = []
+
+    for (r, c), k in zip(hs, inside_ref):
+        v = calc_hypercube_volume(r, m_rel)
+        inter = (k / number_rand_points) * v
+        union = v + new_v - inter
+        result.append(inter / union)
+
+    return result
+
+
+def calc_hypercube_volume(r: float, n: int):
+    return (r * 2) ** n
+
+
+def is_point_inside_hypercube(point: list[float], c: list[float], r: float):
+    diff = np.subtract(point, c)
+    return np.all(np.absolute(diff) <= r)
+
+
+def check_iou_threshold(hs: list[Tuple[float, list[float]]], r: float, c_i: list[float], m_rel: int, hyperspheres: bool,
+                        iou_threshold: Union[float, list[float]] = None) -> bool:
+    if iou_threshold is None: return True
+    ious = np.array(calc_iou(hs, (r, c_i), m_rel)) if hyperspheres else np.array(
+        approximate_hypercube_iou(hs, (r, c_i), m_rel))
+    print(ious)
+    if np.all(ious == -1): return True
+    if isinstance(iou_threshold, float):
+        return np.all(ious <= iou_threshold)
+    elif isinstance(iou_threshold, list):
+        return np.any(iou_threshold[0] <= ious) and np.all(ious <= iou_threshold[1])
 
 
 def generate_small_hypershapes(m_rel: int, q: int, max_r: float, min_r: float, hyperspheres: bool,
@@ -114,29 +171,18 @@ def generate_small_hypershapes(m_rel: int, q: int, max_r: float, min_r: float, h
 
             if hyperspheres:
                 if np.sum(np.square(c_i)) <= (1 - r) ** 2:
-                    if iou_threshold is not None:
-                        ious = [calc_iou([h], c_i, m_rel)[0] for h in hs]
-                        # ious = calc_iou(hs, c_i, m_rel)
-                        #TODO threshold is not applied correct
-                        if isinstance(iou_threshold, float):
-                            if all([iou <= iou_threshold or iou == -1 for iou in ious]):
-                                hs.append((r, c_i))
-                                break
-                        elif isinstance(iou_threshold, list):
-                            if all([iou_threshold[0] <= iou <= iou_threshold[1] or iou == -1 for iou in ious]):
-                                hs.append((r, c_i))
-                                break
-                    else:
+                    if check_iou_threshold(hs, r, c_i, m_rel, hyperspheres, iou_threshold):
                         hs.append((r, c_i))
                         break
             else:
-                hs.append((r, c_i))
-                break
+                if check_iou_threshold(hs, r, c_i, m_rel, hyperspheres, iou_threshold):
+                    hs.append((r, c_i))
+                    break
 
             l += 1
             if l > 100000: raise TimeoutError("After 100000 executions the stopping condition wasn't met!")
 
-    iou_matrix(hs, m_rel)
+    iou_matrix(hs, m_rel, hyperspheres)
 
     return hs
 
@@ -430,14 +476,91 @@ def generate(shape: str, m_rel: int, m_irr: int, m_red: int, q: int, n: int, max
 
 
 if __name__ == "__main__":
-    dataset, labels, noisy_labels = generate("cubes", 4, 3, 2, 3, 100, None, None, [0.1, 0.2, 0.5], "Test", 0, None,
-                                             "ml_datagen")
+    # dataset, labels, noisy_labels = generate("cubes", 4, 3, 2, 3, 100, None, None, [0.1, 0.2, 0.5], "Test", 0, None,
+    #                                          "ml_datagen")
+    #
+    # dataset, labels, noisy_labels = generate("spheres", 4, 3, 2, 3, 100, None, None, [], "Test", 0, None,
+    #                                          "ml_datagen")
+    #
+    # dataset, labels, noisy_labels = generate("cubes", 2, 0, 0, 5, 10000, 0.4, 0.2, [0.1, 0.2, 0.5], "Test", 0, None,
+    #                                          "ml_datagen", singlelabel=True)
+    #
+    # dataset, labels, noisy_labels = generate("spheres", 2, 0, 0, 5, 10000, 0.4, 0.2, [], "Test", 0, None,
+    #                                          "ml_datagen", singlelabel=True)
 
-    dataset, labels, noisy_labels = generate("spheres", 4, 3, 2, 3, 100, None, None, [], "Test", 0, None,
-                                             "ml_datagen")
-
-    dataset, labels, noisy_labels = generate("cubes", 2, 0, 0, 5, 10000, 0.4, 0.2, [0.1, 0.2, 0.5], "Test", 0, None,
+    dataset, labels, noisy_labels = generate("cubes", 2, 0, 0, 5, 10000, 0.4, 0.2, [], "Test", 2, None,
                                              "ml_datagen", singlelabel=True)
 
-    dataset, labels, noisy_labels = generate("spheres", 2, 0, 0, 5, 10000, 0.4, 0.2, [], "Test", 0, None,
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    x = dataset["rel0"]
+    y = dataset["rel1"]
+    plt.xlim(-1, 1)
+    plt.ylim(-1, 1)
+    ax.set_aspect('equal', adjustable='box')
+    plt.scatter(x, y, c=labels.values)
+    plt.show()
+
+    dataset, labels, noisy_labels = generate("cubes", 2, 0, 0, 5, 10000, 0.4, 0.2, [], "Test", 2, None,
+                                             "ml_datagen", singlelabel=True, iou_threshold=0.3)
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    x = dataset["rel0"]
+    y = dataset["rel1"]
+    plt.xlim(-1, 1)
+    plt.ylim(-1, 1)
+    ax.set_aspect('equal', adjustable='box')
+    plt.scatter(x, y, c=labels.values)
+    plt.show()
+
+    dataset, labels, noisy_labels = generate("cubes", 2, 0, 0, 5, 10000, 0.4, 0.2, [], "Test", 2, None,
+                                             "ml_datagen", singlelabel=True, iou_threshold=[0.1, 0.4])
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    x = dataset["rel0"]
+    y = dataset["rel1"]
+    plt.xlim(-1, 1)
+    plt.ylim(-1, 1)
+    ax.set_aspect('equal', adjustable='box')
+    plt.scatter(x, y, c=labels.values)
+    plt.show()
+
+    dataset, labels, noisy_labels = generate("spheres", 2, 0, 0, 5, 10000, 0.4, 0.2, [], "Test", 2, None,
                                              "ml_datagen", singlelabel=True)
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    x = dataset["rel0"]
+    y = dataset["rel1"]
+    plt.xlim(-1, 1)
+    plt.ylim(-1, 1)
+    ax.set_aspect('equal', adjustable='box')
+    plt.scatter(x, y, c=labels.values)
+    plt.show()
+    dataset, labels, noisy_labels = generate("spheres", 2, 0, 0, 5, 10000, 0.4, 0.2, [], "Test", 2, None,
+                                             "ml_datagen", singlelabel=True, iou_threshold=0.3)
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    x = dataset["rel0"]
+    y = dataset["rel1"]
+    plt.xlim(-1, 1)
+    plt.ylim(-1, 1)
+    ax.set_aspect('equal', adjustable='box')
+    plt.scatter(x, y, c=labels.values)
+    plt.show()
+
+    dataset, labels, noisy_labels = generate("spheres", 2, 0, 0, 5, 10000, 0.4, 0.2, [], "Test", 2, None,
+                                             "ml_datagen", singlelabel=True, iou_threshold=[0.1, 0.4])
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    x = dataset["rel0"]
+    y = dataset["rel1"]
+    plt.xlim(-1, 1)
+    plt.ylim(-1, 1)
+    ax.set_aspect('equal', adjustable='box')
+    plt.scatter(x, y, c=labels.values)
+    plt.show()
