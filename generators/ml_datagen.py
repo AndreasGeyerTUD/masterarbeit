@@ -285,7 +285,7 @@ def generate_small_hypershapes(m_rel: int, q: int, max_r: float, min_r: float, h
 
 def move_point(point: list[float], mov_vector: list[float]):
     return (np.array(point) + (
-            (mov_vector * np.random.rand(len(point))) * random.choice(np.arange(-1, 1.1, 0.01)))).tolist()
+            (mov_vector * np.random.rand(len(point))) * random.choice(np.arange(-1, 1.1, 0.1)))).tolist()
 
 
 def generate_points_inside_hypershape(m_rel: int, n: int, c: list[float], r: float, hyperspheres: bool,
@@ -529,7 +529,7 @@ def generate(shape: str, m_rel: int, m_irr: int, m_red: int, q: int, n: int, max
         ns = [int(n / q)] * q
     else:
         ns = []
-        f = n / np.sum(np.array(hypershapes)[:, 0])
+        f = n / np.sum(np.array(hypershapes, dtype=object)[:, 0])
 
         for r, c in hypershapes:
             ns.append(round(r * f))
@@ -617,8 +617,10 @@ if __name__ == "__main__":
     #
     # plot_sl(dataset, labels)
 
-    dataset, labels, noisy_labels = generate("spheres", 2, 0, 0, 5, 10000, 0.3, 0.1, [], "Test", 3, None,
-                                             "ml_datagen", singlelabel=True, iou_threshold=0.3, mov_vectors=[[-.2, .6], [.7, .7], [-.7, .3], [.3, .8]])
+    np.random.seed(1)
+
+    dataset, labels, noisy_labels = generate("spheres", 2, 0, 0, 5, 10000, 0.3, 0.1, [], "Test", 1, None,
+                                             "ml_datagen", singlelabel=True, iou_threshold=0.3, mov_vectors=np.random.rand(20, 2)*0.4)
 
     plot_sl(dataset, labels)
 
