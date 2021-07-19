@@ -4,10 +4,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-datasets = [load_boston, load_iris, load_diabetes, load_wine, load_breast_cancer]
-
-see_what_is_possible = [load_digits, load_linnerud]
-
 
 def split_columns_for_plot(columns: list) -> list[list]:
     if len(columns) > 10:
@@ -54,6 +50,10 @@ def plot_scatter_matrix(data: pd.DataFrame, name: str):
 
 
 def sklearn_datasets():
+    datasets = [load_boston, load_iris, load_diabetes, load_wine, load_breast_cancer]
+
+    see_what_is_possible = [load_digits, load_linnerud]
+
     for dataset in datasets:
         ds = dataset()
         if "filename" in ds:
@@ -66,5 +66,36 @@ def sklearn_datasets():
         plot_scatter_matrix(x, name)
 
 
+def seaborn_datasets():
+    datasets = ["car_crashes", "penguins", "exercise", "mpg"]
+
+    for dataset in datasets:
+        data = sns.load_dataset(dataset)
+        name = dataset
+
+        if dataset == "car_crashes":
+            data.drop("abbrev", axis=1, inplace=True)
+        elif dataset == "exercise":
+            data.drop("Unnamed: 0", axis=1, inplace=True)
+            data["time"] = data["time"].apply(str_split).astype(int)
+        elif dataset == "mpg":
+            data.drop("name", axis=1, inplace=True)
+
+        for column in data.columns:
+            if data[column].dtype == object:
+                data[column] = data[column].astype('category')
+            if data[column].dtype.name == "category":
+                data[column] = data[column].cat.codes
+
+        print()
+
+        plot_scatter_matrix(data, name)
+
+
+def str_split(string: str) -> str:
+    return string.split(" ")[0]
+
+
 if __name__ == "__main__":
-    sklearn_datasets()
+    # sklearn_datasets()
+    seaborn_datasets()
