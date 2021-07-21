@@ -194,7 +194,13 @@ energy:
   - ","
   - 0
   - null
-  - ["Heating Load", "Cooling Load"]
+  - "Heating Load"
+
+#energy:
+#  - ","
+#  - 0
+#  - null
+#  - "Cooling Load"
 
 facebook:
   - ","

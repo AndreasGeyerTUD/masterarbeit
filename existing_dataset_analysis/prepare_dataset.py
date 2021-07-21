@@ -37,13 +37,13 @@ def read_and_parse_dataset(dataset_path: str, save_path: str):
                 df[column] = df[column].astype('category')
             df[column] = df[column].cat.codes
 
-    for column in df.columns:
-        if (df[column] < 0).any():
-            df[column] = df[column] + abs(df[column].min())
+    # for column in df.columns:
+    #     if (df[column] < 0).any():
+    #         df[column] = df[column] + abs(df[column].min())
 
     label_column = parsing_args[3]
     if label_column is not None:
-        labels = df[label_column]
+        labels = df[label_column].to_frame()
         df.drop(label_column, axis=1, inplace=True)
     else:
         labels = None
