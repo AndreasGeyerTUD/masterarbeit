@@ -1,8 +1,12 @@
-from sklearn.datasets import load_boston, load_iris, load_diabetes, load_digits, load_linnerud, load_wine, \
-    load_breast_cancer
-import pandas as pd
+from pathlib import Path
+
 import matplotlib.pyplot as plt
+import pandas as pd
 import seaborn as sns
+from sklearn.datasets import load_boston, load_iris, load_diabetes, load_wine, \
+    load_breast_cancer
+
+from prepare_dataset import read_and_parse_dataset
 
 
 def split_columns_for_plot(columns: list) -> list[list]:
@@ -25,8 +29,12 @@ def split_columns_for_plot(columns: list) -> list[list]:
         return [columns]
 
 
-def plot_scatter_matrix(data: pd.DataFrame, name: str):
+def plot_scatter_matrix(data: pd.DataFrame, name: str, force: bool = False):
     sns.set_theme(style="white")
+
+    if len(data.columns) > 40 and not force:
+        raise TimeoutError("You tried to plot a dataset with more than 40 dimensions. If you intend to do this, then "
+                           "set 'force=True'!")
 
     splits = split_columns_for_plot(data.columns)
 
@@ -34,25 +42,24 @@ def plot_scatter_matrix(data: pd.DataFrame, name: str):
         for j in range(len(splits)):
             g = sns.PairGrid(data, diag_sharey=False, x_vars=splits[i], y_vars=splits[j])
             if i == j:
-                g.map_upper(sns.scatterplot)
+                g.map_upper(sns.scatterplot, linewidth=0)
                 g.map_lower(sns.kdeplot)
                 g.map_diag(sns.kdeplot)
             elif i < j:
                 g.map(sns.kdeplot)
             elif i > j:
-                g.map(sns.scatterplot)
+                g.map(sns.scatterplot, linewidth=0)
 
             g.fig.subplots_adjust(top=0.95)
             g.fig.suptitle(name)
 
             g.savefig("dataset_plots/{}_{}_{}.pdf".format(name, i, j), format="pdf")
+            # plt.show()
             plt.close()
 
 
 def sklearn_datasets():
     datasets = [load_boston, load_iris, load_diabetes, load_wine, load_breast_cancer]
-
-    see_what_is_possible = [load_digits, load_linnerud]
 
     for dataset in datasets:
         ds = dataset()
@@ -63,7 +70,7 @@ def sklearn_datasets():
 
         x = pd.DataFrame(ds.data, columns=ds.feature_names)
 
-        plot_scatter_matrix(x, name)
+        plot_scatter_matrix(x, name + "_sklearn")
 
 
 def seaborn_datasets():
@@ -81,21 +88,43 @@ def seaborn_datasets():
         elif dataset == "mpg":
             data.drop("name", axis=1, inplace=True)
 
-        for column in data.columns:
-            if data[column].dtype == object:
-                data[column] = data[column].astype('category')
-            if data[column].dtype.name == "category":
+        for column, dtype in data.dtypes.items():
+            if dtype not in ["int64", "float64"]:
+                if dtype.name != "category":
+                    data[column] = data[column].astype('category')
                 data[column] = data[column].cat.codes
 
-        print()
-
-        plot_scatter_matrix(data, name)
+        plot_scatter_matrix(data, name + "_seaborn")
 
 
 def str_split(string: str) -> str:
     return string.split(" ")[0]
 
 
+def beginner_datasets():
+    path = Path("uncleaned_datasets/")
+    files = list(path.glob("*"))
+
+    for file in files:
+        name = file.name.split(".")[0]
+
+        if name <= "parkinsons": continue
+
+        if not Path("cleaned_datasets/{}_dataset.csv".format(name)).exists():
+            dataset, labels = read_and_parse_dataset(str(file), "cleaned_datasets")
+        else:
+            dataset = pd.read_csv("cleaned_datasets/{}_dataset.csv".format(name), sep=",", header=0)
+
+        try:
+            plot_scatter_matrix(dataset, name + "_beginner")
+        except Exception as e:
+            print(e, name)
+
+
 if __name__ == "__main__":
-    # sklearn_datasets()
-    seaborn_datasets()
+    sklearn_datasets()
+    # seaborn_datasets()
+    # beginner_datasets()
+
+problems = ["bank", "blood", "credit", "elections", "facebook"]
+large = ["elections", "gold", "house", "mice"]
