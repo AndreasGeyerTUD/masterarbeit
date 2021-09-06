@@ -190,6 +190,10 @@ def is_point_inside_hypersphere(point: np.array, c: List[float], r: float) -> bo
     return np.sum(np.square(np.subtract(point, c))) < r ** 2
 
 
+def is_point_inside_hypermoon(point: np.array, c: Tuple[List[float]], r: Tuple[float]) -> bool:
+    return is_point_inside_hypersphere(point, c[0], r[0]) and not is_point_inside_hypersphere(point, c[1], r[1])
+
+
 def check_iou_threshold(hs: List[Tuple[float, List[float]]], r: float, c_i: List[float], m_rel: int, hyperspheres: bool,
                         iou_threshold: Union[float, List[float]] = None) -> bool:
     """
@@ -250,7 +254,7 @@ def generate_small_hypershapes(m_rel: int, n_classes: int, max_r: float, min_r: 
 
     def gen_moon(m_rel: int, max_r: float, min_r: float, i: int, j: int):
         moon = generate_small_hypermoons(m_rel, max_r, min_r)
-        hs[i][j] = {"shape": hypershapes,
+        hs[i][j] = {"shape": "moons",
                     "center_big": moon[0][0],
                     "radius_big": moon[0][1],
                     "center_small": moon[1][0],
@@ -287,13 +291,13 @@ def generate_small_hypershapes(m_rel: int, n_classes: int, max_r: float, min_r: 
                     rand = random.random()
                     if rand < 0.4:
                         c, r = generate_small_hypercube(m_rel, max_r, min_r)
-                        hs[i][j] = {"shape": hypershapes,
+                        hs[i][j] = {"shape": "cubes",
                                     "center": c,
                                     "radius": r
                                     }
                     elif rand < 0.8:
                         c, r = generate_small_hypersphere(m_rel, max_r, min_r)
-                        hs[i][j] = {"shape": hypershapes,
+                        hs[i][j] = {"shape": "spheres",
                                     "center": c,
                                     "radius": r
                                     }
@@ -347,7 +351,7 @@ def generate_small_hypercube(m_rel: int, max_r: float, min_r: float) -> Tuple[Li
 def generate_small_hypermoons(m_rel: int, max_r: float, min_r: float) -> List[Tuple[List[float], float]]:
     c_big, r_big = generate_small_hypersphere(m_rel, max_r, min_r)
 
-    c_small = c_big + (np.random.rand(m_rel) * (0.2 * r_big))
+    c_small = c_big + ((np.random.rand(m_rel) * (0.4 * r_big)) * random.choice([1, -1]))
     r_small = 0.9 * r_big
 
     return [(c_big, r_big), (c_small, r_small)]
@@ -358,7 +362,8 @@ def move_point(point: List[float], mov_vector: List[float]):
             (mov_vector * np.random.rand(len(point))) * random.choice(np.arange(-1, 1.1, 0.1)))).tolist()
 
 
-def generate_points_inside_hypershape(m_rel: int, n: int, c: List[float], r: float, hypershape: str,
+def generate_points_inside_hypershape(m_rel: int, n: int, c: Union[List[float], Tuple[List[float]]],
+                                      r: Union[float, Tuple[float]], hypershape: str,
                                       mov_vector: List[float] = None) -> List[List[float]]:
     """
     Populating the beforehand created hypershapes (cubes and spheres) with points (evenly distributed). This function
@@ -381,6 +386,8 @@ def generate_points_inside_hypershape(m_rel: int, n: int, c: List[float], r: flo
             x = generate_point_inside_hypersphere(m_rel, c, r)
         elif hypershape == "cubes":
             x = generate_point_inside_hypercube(m_rel, c, r)
+        elif hypershape == "moons":
+            x = generate_point_inside_hypermoon(m_rel, c, r)
 
         if mov_vector is not None:
             x = move_point(x, mov_vector)
@@ -423,25 +430,71 @@ def generate_point_inside_hypercube(m_rel: int, c: List[float], r: float) -> np.
     return list(np.random.rand(m_rel) * r * 2 - r + np.array(c))
 
 
-def assign_labels(dataset: pd.DataFrame, hs: List[Tuple[float, List[float]]], q: int) -> pd.DataFrame:
+def generate_point_inside_hypermoon(m_rel: int, c: Tuple[List[float]], r: Tuple[float]) -> List[float]:
+    c_big, c_small = c
+    r_big, r_small = r
+
+    x = generate_point_inside_hypersphere(m_rel, c_big, r_big)
+
+    # TODO evaluate whether stopping criterion is needed
+    while is_point_inside_hypersphere(x, c_small, r_small):
+        x = generate_point_inside_hypersphere(m_rel, c_big, r_big)
+
+    return x
+
+
+def assign_labels(dataset: pd.DataFrame, hypershapes: Dict[int, Dict], n_classes: int) -> pd.DataFrame:
     """
     Assign the labels for every point. Based on the possible overlap of the hypershapes it is possible that one point
     has several labels (multilabel). This is a list with n_classes entries encoded with One-Hot-Encoding for the labels for
     every point. The membership of a point for a hypershape is calculated by the distance of the point to every shape.
 
     :param dataset: The dataset (containing only the relevant features) as pandas.DataFrame.
-    :param hs: The hypershapes a point might belong to.
-    :param q: The number of possible labels.
+    :param hypershapes: The hypershapes a point might belong to.
+    :param n_classes: The number of possible labels.
     :return: A pandas.DataFrame with a One-Hot-Encoded list of labels for every point.
     """
 
-    labels = np.zeros(shape=(len(dataset), q))
-    labels = pd.DataFrame(labels, columns=["l{}".format(i) for i in range(q)])
+    labels = np.zeros(shape=(len(dataset), n_classes))
+    labels = pd.DataFrame(labels, columns=["l{}".format(i) for i in range(n_classes)])
     for point, label in zip(dataset.values, labels.values):
-        for idx, (r, c) in enumerate(hs):
-            if all(math.sqrt(res ** 2) <= r for res in (np.array(point) - np.array(c))): label[idx] = 1
+        for cla in hypershapes:
+            for shape in hypershapes[cla].values():
+                if shape["shape"] == "cubes":
+                    if is_point_inside_hypercube(point, shape["center"], shape["radius"]):
+                        label[int(cla)] = 1
+                elif shape["shape"] == "spheres":
+                    if is_point_inside_hypersphere(point, shape["center"], shape["radius"]):
+                        label[int(cla)] = 1
+                elif shape["shape"] == "moons":
+                    if is_point_inside_hypermoon(point, (shape["center_big"], shape["center_small"]),
+                                                 (shape["radius_big"], shape["radius_small"])):
+                        label[int(cla)] = 1
 
     return labels
+
+
+def assign_random_labels(dataset: List[List[float]], n_classes: int) -> pd.DataFrame:
+    labels = np.zeros(shape=(len(dataset), n_classes))
+    labels = pd.DataFrame(labels, columns=["l{}".format(i) for i in range(n_classes)])
+    for label in labels.values:
+        for cla in range(n_classes):
+            label[cla] = random.randint(0, 1)
+
+    return labels
+
+
+def merge_dataset_with_random(dataset: pd.DataFrame, labels: pd.DataFrame, random_points: pd.DataFrame,
+                              random_labels: pd.DataFrame) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    if len(dataset) == 0:
+        return random_points, random_labels
+    elif len(random_points) == 0:
+        pass
+    else:
+        dataset = dataset.append(random_points, ignore_index=True)
+        labels = labels.append(random_labels, ignore_index=True)
+
+    return dataset, labels
 
 
 def add_redundant(dataset: pd.DataFrame, m_red: int, random_state: int = None) -> pd.DataFrame:
@@ -545,10 +598,117 @@ def add_noise_singlelabel(labels: pd.DataFrame, noise_levels: Union[List[float],
     return noisy_labels
 
 
+def calculate_points_distribution(n_samples: int, n_classes: int, hypershapes: Dict[int, Dict],
+                                  points_distribution: str = None) -> List[int]:
+    if points_distribution == "uniform":
+        ns = [int(n_samples / n_classes)] * n_classes
+    else:
+        ns = []
+        rs = [0] * len(hypershapes.keys())
+
+        for cla in hypershapes.keys():
+            rs[int(cla)] = sum(
+                [cluster["radius"] if not cluster["shape"] == "moons" else cluster["radius_big"] for cluster in
+                 hypershapes[cla].values()])
+
+        f = n_samples / sum(rs)
+
+        for r_sum in rs:
+            ns.append(round(r_sum * f))
+
+    i = 0
+    while sum(ns) < n_samples:
+        ns[i % n_classes] += 1
+        i += 1
+    i = 0
+    while sum(ns) > n_samples:
+        ns[i % n_classes] -= 1 if ns[i % n_classes] > 0 else 0
+        i += 1
+
+    return ns
+
+
+def populate_hypershapes(m_rel: int, points_distribution: List[int], hypershapes: Dict[int, Dict], n_classes: int,
+                         singlelabel: bool = True, mov_vectors: List[List[float]] = None) -> pd.DataFrame:
+    dataset = []
+
+    for cla in hypershapes.keys():
+        ns = []
+
+        rs = [cluster["radius"] if not cluster["shape"] == "moons" else cluster["radius_big"] for cluster in
+              hypershapes[cla].values()]
+
+        f = points_distribution[int(cla)] / sum(rs)
+
+        for r in rs:
+            ns.append(round(r * f))
+
+        i = 0
+        while sum(ns) < points_distribution[int(cla)]:
+            ns[i % n_classes] += 1
+            i += 1
+        i = 0
+        while sum(ns) > points_distribution[int(cla)]:
+            ns[i % n_classes] -= 1 if ns[i % n_classes] > 0 else 0
+            i += 1
+
+        for shape, size in zip(hypershapes[cla].values(), ns):
+            if shape["shape"] == "moons":
+                c = shape["center_big"], shape["center_small"]
+                r = shape["radius_big"], shape["radius_small"]
+            else:
+                c = shape["center"]
+                r = shape["radius"]
+
+            points = generate_points_inside_hypershape(m_rel, size, c, r, shape["shape"],
+                                                       random.choice(mov_vectors) if mov_vectors is not None else None)
+
+            for point in points:
+                if singlelabel:
+                    point.append(int(cla))
+                dataset.append(point)
+
+    return pd.DataFrame(dataset)
+
+
+def make_features_categorical(dataset: pd.DataFrame, random_points: pd.DataFrame, c_v: List[int]) \
+        -> Tuple[pd.DataFrame, pd.DataFrame]:
+    already = []
+
+    for feature in c_v:
+        cats = list(range(feature))
+        random.shuffle(cats)
+
+        col = random.choice(dataset.columns)
+        while col in already:
+            col = random.choice(dataset.columns)
+        already.append(col)
+
+        column = dataset[col].to_numpy()
+
+        column_norm = (column - np.min(column)) / (np.max(column) - np.min(column))
+
+        bound = 1 / feature
+
+        new_column = np.zeros(len(column))
+
+        for idx, value in enumerate(column_norm):
+            for i in range(len(cats)):
+                if i * bound <= value < (i + 1) * bound:
+                    new_column[idx] = cats[i]
+
+        dataset[col] = new_column.astype(int)
+
+        if random_points is not None and len(random_points) > 0:
+            random_points[col] = np.random.randint(0, feature, len(random_points[col]))
+
+    return dataset, random_points
+
+
 def generate(n_samples: int, shapes: Union[str, List[Tuple[str, float]]], m_rel: int, m_irr: int, m_red: int,
-             n_classes: int,
-             n_clusters_per_class: int = 1, max_r: float = None, min_r: float = None, random_points: float = 0,
-             noise_levels: List[float] = None,
+             n_classes: int, n_clusters_per_class: int = 1, categorical_variabels: List[int] = None,
+             max_r: float = None,
+             min_r: float = None, random_points: float = 0, noise_levels: List[float] = None,
              name: str = "Dataset test", random_state: int = None, points_distribution: str = None,
              save_dir: str = None, singlelabel: bool = False, iou_threshold: Union[float, List[float]] = None,
              mov_vectors: List[List[float]] = None) \
@@ -604,6 +764,9 @@ def generate(n_samples: int, shapes: Union[str, List[Tuple[str, float]]], m_rel:
         raise ValueError("n_clusters_per_class (the number of clusters per label) must be larger than 0!")
     if n_samples <= 0:
         raise ValueError("n_samples (the number of samples) must be larger than 0!")
+    if categorical_variabels is not None and len(categorical_variabels) > m_rel:
+        raise ValueError(
+            "There cannot be more categorical_variabels than relevant features (m_rel)! (len(categorical_variabels) <= m_rel)")
     if max_r <= 0:
         raise ValueError("max_r (the maximum radius) must be larger than 0!")
     if min_r <= 0:
@@ -642,45 +805,26 @@ def generate(n_samples: int, shapes: Union[str, List[Tuple[str, float]]], m_rel:
     n_samples = n_samples - rp_samples
 
     # TODO: random label assignen und am Ende zum Datensatz hinzufügen
-    rp = [np.random.rand(m_rel + m_red + m_irr) for _ in range(rp_samples)]
+    rp = pd.DataFrame(np.array([np.random.rand(m_rel) for _ in range(rp_samples)]) * 2 - 1)
 
-    # TODO:
+    ns = calculate_points_distribution(n_samples, n_classes, hypershapes, points_distribution)
 
-    if points_distribution == "uniform":
-        ns = [int(n_samples / n_classes)] * n_classes
-    else:
-        ns = []
-        f = n_samples / np.sum(np.array(hypershapes, dtype=object)[:, 0])
-
-        for r, c in hypershapes:
-            ns.append(round(r * f))
-
-    i = 0
-    while sum(ns) < n_samples:
-        ns[i % n_classes] += 1
-        i += 1
-    i = 0
-    while sum(ns) > n_samples:
-        ns[i % n_classes] -= 1 if ns[i % n_classes] > 0 else 0
-        i += 1
-
-    dataset = []
-    for idx, (size, (r, c)) in enumerate(zip(ns, hypershapes)):
-        points = generate_points_inside_hypershape(m_rel, size, c, r, hypershapes,
-                                                   random.choice(mov_vectors) if mov_vectors is not None else None)
-        for point in points:
-            if singlelabel:
-                point.append(idx)
-            dataset.append(point)
-
-    dataset = pd.DataFrame(dataset)
+    dataset = populate_hypershapes(m_rel, ns, hypershapes, n_classes, singlelabel, mov_vectors)
 
     if not singlelabel:
         labels = assign_labels(dataset, hypershapes, n_classes)
+        random_points_labels = assign_random_labels(rp, n_classes)
     else:
         labels = dataset[m_rel].to_frame()
         labels.rename({m_rel: "labels"}, axis=1, inplace=True)
         dataset.drop(m_rel, axis=1, inplace=True)
+        random_points_labels = pd.DataFrame([random.randrange(0, n_classes) for _ in range(len(rp))],
+                                            columns=["labels"])
+
+    if categorical_variabels is not None:
+        dataset, rp = make_features_categorical(dataset, rp, categorical_variabels)
+
+    dataset, labels = merge_dataset_with_random(dataset, labels, rp, random_points_labels)
 
     dataset.rename({i: "rel{}".format(i) for i in range(m_rel)}, axis=1, inplace=True)
 
@@ -697,13 +841,17 @@ def generate(n_samples: int, shapes: Union[str, List[Tuple[str, float]]], m_rel:
 
     if save_dir:
         save_dir += "/sl" if singlelabel else "/ml"
+        if isinstance(shapes, str):
+            shape_name = shapes
+        else:
+            shape_name = "custom"
         Path(save_dir).mkdir(parents=True, exist_ok=True)
-        with open("{}/{}_{}_dataset.csv".format(save_dir, name.lower(), shape), "w") as file:
+        with open("{}/{}_{}_dataset.csv".format(save_dir, name.lower(), shape_name), "w") as file:
             dataset.to_csv(file, index=False)
-        with open("{}/{}_{}_labels.csv".format(save_dir, name.lower(), shape), "w") as file:
+        with open("{}/{}_{}_labels.csv".format(save_dir, name.lower(), shape_name), "w") as file:
             labels.to_csv(file, index=False)
         for ind, noise_level in enumerate(noisy_labels):
-            with open("{}/{}_{}_n{}_labels.csv".format(save_dir, name.lower(), shape, ind), "w") as file:
+            with open("{}/{}_{}_n{}_labels.csv".format(save_dir, name.lower(), shape_name, ind), "w") as file:
                 noise_level.to_csv(file, index=False)
 
     return dataset, labels, noisy_labels
@@ -715,7 +863,7 @@ def plot_sl(dataset, labels):
     x = dataset["rel0"]
     y = dataset["rel1"]
     plt.xlim(-1, 1)
-    plt.ylim(-1, 1)
+    plt.ylim(-1, 3)
     ax.set_aspect('equal', adjustable='box')
     plt.scatter(x, y, c=labels.values)
     plt.show()
@@ -734,41 +882,74 @@ if __name__ == "__main__":
     # dataset, labels, noisy_labels = generate("spheres", 2, 0, 0, 5, 10000, 0.4, 0.2, [], "Test", 0, None,
     #                                          "ml_datagen", singlelabel=True)
     #
-
-    dataset, labels, noisy_labels = generate(38900, "spheres", 24, 4, 0, 18, 4, None, None, 0, None, "test", 50494,
-                                             None, "ml_datagen", singlelabel=True, iou_threshold=None,
-                                             mov_vectors=None)
+    #
+    # dataset, labels, noisy_labels = generate(38900, "spheres", 24, 4, 0, 18, 4, [7], None, None, 0.3, None, "test", 50494,
+    #                                          None, "ml_datagen", singlelabel=True, iou_threshold=None,
+    #                                          mov_vectors=None)
 
     # dataset, labels, noisy_labels = generate("spheres", 4, 4, 0, 18, 38900, None, None, None, "Test", 50494, None,
     #                                          "ml_datagen", singlelabel=True, iou_threshold=None,
     #                                          mov_vectors=None)
 
-    # dataset, labels, noisy_labels = generate("cubes", 2, 0, 0, 5, 10000, 0.4, 0.2, [], "Test", 2, None,
+    # dataset, labels, noisy_labels = generate(10000, "cubes", 2, 0, 0, 5, 2, None, 0.4, 0.2, 0, None, "Test", 2, None,
     #                                          "ml_datagen", singlelabel=True)
     #
     # plot_sl(dataset, labels)
-    #
-    # dataset, labels, noisy_labels = generate("cubes", 2, 0, 0, 5, 10000, 0.4, 0.2, [], "Test", 2, None,
+
+    # dataset, labels, noisy_labels = generate(10000, "cubes", 2, 0, 0, 5, 2, None, 0.4, 0.2, 0, None, "Test", 2, None,
     #                                          "ml_datagen", singlelabel=True, iou_threshold=0.3)
     #
     # plot_sl(dataset, labels)
     #
-    # dataset, labels, noisy_labels = generate("cubes", 2, 0, 0, 5, 10000, 0.4, 0.2, [], "Test", 2, None,
+    # dataset, labels, noisy_labels = generate(10000, "cubes", 2, 0, 0, 5, 2, None, 0.4, 0.2, 0, None, "Test", 2, None,
     #                                          "ml_datagen", singlelabel=True, iou_threshold=[0.1, 0.4])
     #
     # plot_sl(dataset, labels)
-    #
-    # dataset, labels, noisy_labels = generate("spheres", 2, 0, 0, 5, 10000, 0.4, 0.2, [], "Test", 2, None,
+
+    # dataset, labels, noisy_labels = generate(10000, "spheres", 2, 0, 0, 5, 2, None, 0.4, 0.2, 0, None, "Test", 2,
+    #                                          None,
     #                                          "ml_datagen", singlelabel=True)
     #
     # plot_sl(dataset, labels)
-    # #
-    # dataset, labels, noisy_labels = generate("spheres", 2, 0, 0, 5, 10000, 0.4, 0.2, [], "Test", 2, None,
+
+    # dataset, labels, noisy_labels = generate(10000, "spheres", 2, 0, 0, 5, 2, None, 0.4, 0.2, 0, None, "Test", 2,
+    #                                          None,
     #                                          "ml_datagen", singlelabel=True, iou_threshold=0.3)
     #
     # plot_sl(dataset, labels)
     #
-    # dataset, labels, noisy_labels = generate("spheres", 2, 0, 0, 5, 10000, 0.4, 0.2, [], "Test", 2, None,
+    # dataset, labels, noisy_labels = generate(10000, "spheres", 2, 0, 0, 5, 2, None, 0.4, 0.2, 0, None, "Test", 2,
+    #                                          None,
+    #                                          "ml_datagen", singlelabel=True, iou_threshold=[0.1, 0.4])
+    #
+    # plot_sl(dataset, labels)
+
+    # dataset, labels, noisy_labels = generate(10000, "moons", 2, 0, 0, 5, 2, None, 0.4, 0.2, 0, None, "Test", 2, None,
+    #                                          "ml_datagen", singlelabel=True)
+    #
+    # plot_sl(dataset, labels)
+
+    # dataset, labels, noisy_labels = generate(10000, "moons", 2, 0, 0, 5, 2, None, 0.4, 0.2, 0, None, "Test", 2, None,
+    #                                          "ml_datagen", singlelabel=True, iou_threshold=0.3)
+    #
+    # plot_sl(dataset, labels)
+    #
+    # dataset, labels, noisy_labels = generate(10000, "moons", 2, 0, 0, 5, 2, None, 0.4, 0.2, 0, None, "Test", 2, None,
+    #                                          "ml_datagen", singlelabel=True, iou_threshold=[0.1, 0.4])
+    #
+    # plot_sl(dataset, labels)
+
+    dataset, labels, noisy_labels = generate(10000, "mix", 2, 0, 0, 5, 2, [3], 0.4, 0.2, 0, None, "Test", 2, None,
+                                             "ml_datagen", singlelabel=True)
+
+    plot_sl(dataset, labels)
+
+    # dataset, labels, noisy_labels = generate(10000, "mix", 2, 0, 0, 5, 2, None, 0.4, 0.2, 0, None, "Test", 2, None,
+    #                                          "ml_datagen", singlelabel=True, iou_threshold=0.3)
+    #
+    # plot_sl(dataset, labels)
+    #
+    # dataset, labels, noisy_labels = generate(10000, "mix", 2, 0, 0, 5, 2, None, 0.4, 0.2, 0, None, "Test", 2, None,
     #                                          "ml_datagen", singlelabel=True, iou_threshold=[0.1, 0.4])
     #
     # plot_sl(dataset, labels)
