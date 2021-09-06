@@ -14,7 +14,7 @@ from scipy.special import gamma, betainc
 def calc_hypersphere_iou(hs: List[Tuple[float, List[float]]], new_hs: Tuple[float, List[float]], m_rel: int) \
         -> List[float]:
     """
-    As the name suggest this method calculates the n-dimensional Intersection over Union (IoU). This value is as exact
+    As the name suggest this method calculates the n_samples-dimensional Intersection over Union (IoU). This value is as exact
     as it gets. For each element in hs the IoU with the new_hs is calculated.
 
     :param hs: A list of hyperspheres containing tuple of radius and corresponding center-points.
@@ -221,8 +221,9 @@ def check_iou_threshold(hs: List[Tuple[float, List[float]]], r: float, c_i: List
         return np.any(iou_threshold[0] <= ious) and np.all(ious <= iou_threshold[1])
 
 
-def generate_small_hypershapes(m_rel: int, q: int, max_r: float, min_r: float, hypershapes: str,
-                               iou_threshold: Union[float, List[float]] = None) -> List[Tuple[float, List[float]]]:
+def generate_small_hypershapes(m_rel: int, n_classes: int, max_r: float, min_r: float,
+                               hypershapes: Union[str, List[Tuple[str, float]]], n_clusters_per_class: int,
+                               iou_threshold: Union[float, List[float]] = None) -> Dict[int, Dict]:
     """
     As this generator is based on hypercubes and hyperspheres one needs to generate small hypercubes/spheres which will
     later contain the points.
@@ -230,7 +231,7 @@ def generate_small_hypershapes(m_rel: int, q: int, max_r: float, min_r: float, h
     triggered it might be because of bad luck. Try again a few times (maybe with a different random_state).
 
     :param m_rel: The number of relevant features to create. Is used to determine the dimensionality of the hypershape.
-    :param q: The number of possible labels. For each label there is a hypershape created (overlap of shapes leads to
+    :param n_classes: The number of possible labels. For each label there is a hypershape created (overlap of shapes leads to
         multilabel.
     :param max_r: The maximal radius for spheres or half-edge for cubes.
     :param min_r: The minimal radius for spheres or half-edge for cubes.
@@ -247,36 +248,109 @@ def generate_small_hypershapes(m_rel: int, q: int, max_r: float, min_r: float, h
         values)
     """
 
-    hs = []
-    for i in range(q):
-        c_i = [0] * m_rel
-        r = (random.random() * (max_r - min_r)) + min_r
-        max_c = 1 - r
-        min_c = - max_c
+    def gen_moon(m_rel: int, max_r: float, min_r: float, i: int, j: int):
+        moon = generate_small_hypermoons(m_rel, max_r, min_r)
+        hs[i][j] = {"shape": hypershapes,
+                    "center_big": moon[0][0],
+                    "radius_big": moon[0][1],
+                    "center_small": moon[1][0],
+                    "radius_small": moon[1][1],
+                    }
 
-        l = 0
-        while True:
-            for j in np.random.permutation(m_rel):
-                if hypershapes == "spheres":
-                    bound = math.sqrt(((1 - r) ** 2) - np.sum(np.square(c_i)))
-                    max_c = bound
-                    min_c = -bound
+    hs = {}
+    all_hs = []
 
-                c_i[j] = (random.random() * (max_c - min_c)) + min_c
+    for i in range(n_classes):
+        hs[i] = {}
+        for j in range(n_clusters_per_class):
+            if isinstance(hypershapes, str):
+                if hypershapes in ["cubes", "spheres"]:
+                    l = 0
+                    while True:
+                        c, r = generate_small_hypercube(m_rel, max_r, min_r) if hypershapes == "cubes" else \
+                            generate_small_hypersphere(m_rel, max_r, min_r)
 
-            if check_iou_threshold(hs, r, c_i, m_rel, hypershapes == "spheres", iou_threshold):
-                hs.append((r, c_i))
-                break
+                        if check_iou_threshold(all_hs, r, c, m_rel, hypershapes == "spheres", iou_threshold):
+                            all_hs.append((r, c))
+                            break
 
-            l += 1
-            if l > 100000: raise TimeoutError("After 100000 executions the stopping condition wasn't met!")
+                        l += 1
+                        if l > 100000: raise TimeoutError("After 100000 executions the stopping condition wasn't met!")
+
+                    hs[i][j] = {"shape": hypershapes,
+                                "center": c,
+                                "radius": r
+                                }
+                elif hypershapes == "moons":
+                    gen_moon(m_rel, max_r, min_r, i, j)
+                elif hypershapes == "mix":
+                    rand = random.random()
+                    if rand < 0.4:
+                        c, r = generate_small_hypercube(m_rel, max_r, min_r)
+                        hs[i][j] = {"shape": hypershapes,
+                                    "center": c,
+                                    "radius": r
+                                    }
+                    elif rand < 0.8:
+                        c, r = generate_small_hypersphere(m_rel, max_r, min_r)
+                        hs[i][j] = {"shape": hypershapes,
+                                    "center": c,
+                                    "radius": r
+                                    }
+                    else:
+                        gen_moon(m_rel, max_r, min_r, i, j)
+            elif isinstance(hypershapes, list):
+                rand = random.random()
+                shape = ""
+
+                for idx, (sha, prob) in enumerate(hypershapes):
+                    if rand < (sum([hypershapes[i][1] for i in range(idx)]) + prob):
+                        shape = sha
+
+                if shape in ["cubes", "spheres"]:
+                    c, r = generate_small_hypercube(m_rel, max_r, min_r) if hypershapes == "cubes" else \
+                        generate_small_hypersphere(m_rel, max_r, min_r)
+                    hs[i][j] = {"shape": hypershapes,
+                                "center": c,
+                                "radius": r
+                                }
+                elif shape == "moons":
+                    gen_moon(m_rel, max_r, min_r, i, j)
 
     return hs
 
 
-def generate_small_hypermoons(m_rel: int, q: int, max_r: float, min_r: float,
-                              iou_threshold: Union[float, List[float]] = None) -> List[Tuple[float, List[float]]]:
-    pass
+def generate_small_hypersphere(m_rel: int, max_r: float, min_r: float) -> Tuple[List[float], float]:
+    c = [0] * m_rel
+    r = (random.random() * (max_r - min_r)) + min_r
+
+    for j in np.random.permutation(m_rel):
+        bound = math.sqrt(((1 - r) ** 2) - np.sum(np.square(c)))
+        max_c = bound
+        min_c = -bound
+
+        c[j] = (random.random() * (max_c - min_c)) + min_c
+
+    return c, r
+
+
+def generate_small_hypercube(m_rel: int, max_r: float, min_r: float) -> Tuple[List[float], float]:
+    r = (random.random() * (max_r - min_r)) + min_r
+    max_c = 1 - r
+    min_c = - max_c
+
+    c = list(np.random.rand(m_rel) * (max_c - min_c) + min_c)
+
+    return c, r
+
+
+def generate_small_hypermoons(m_rel: int, max_r: float, min_r: float) -> List[Tuple[List[float], float]]:
+    c_big, r_big = generate_small_hypersphere(m_rel, max_r, min_r)
+
+    c_small = c_big + (np.random.rand(m_rel) * (0.2 * r_big))
+    r_small = 0.9 * r_big
+
+    return [(c_big, r_big), (c_small, r_small)]
 
 
 def move_point(point: List[float], mov_vector: List[float]):
@@ -352,7 +426,7 @@ def generate_point_inside_hypercube(m_rel: int, c: List[float], r: float) -> np.
 def assign_labels(dataset: pd.DataFrame, hs: List[Tuple[float, List[float]]], q: int) -> pd.DataFrame:
     """
     Assign the labels for every point. Based on the possible overlap of the hypershapes it is possible that one point
-    has several labels (multilabel). This is a list with q entries encoded with One-Hot-Encoding for the labels for
+    has several labels (multilabel). This is a list with n_classes entries encoded with One-Hot-Encoding for the labels for
     every point. The membership of a point for a hypershape is calculated by the distance of the point to every shape.
 
     :param dataset: The dataset (containing only the relevant features) as pandas.DataFrame.
@@ -408,7 +482,8 @@ def add_irrelevant(dataset: pd.DataFrame, m_irr: int) -> pd.DataFrame:
     return dataset
 
 
-def add_noise_multilabel(labels: pd.DataFrame, noise_levels: Union[List[float], None], q: int) -> List[pd.DataFrame]:
+def add_noise_multilabel(labels: pd.DataFrame, noise_levels: Union[List[float], None], q: int) -> List[
+    pd.DataFrame]:
     """
     Create noisy labels for multilabel. The defined noise_levels tell with which probability a point changes a label.
 
@@ -440,7 +515,8 @@ def add_noise_multilabel(labels: pd.DataFrame, noise_levels: Union[List[float], 
     return noisy_labels
 
 
-def add_noise_singlelabel(labels: pd.DataFrame, noise_levels: Union[List[float], None], q: int) -> List[pd.DataFrame]:
+def add_noise_singlelabel(labels: pd.DataFrame, noise_levels: Union[List[float], None], q: int) -> List[
+    pd.DataFrame]:
     """
     Create noisy labels for singlelabel. The defined noise_levels tell with which probability a point changes its label.
 
@@ -469,26 +545,29 @@ def add_noise_singlelabel(labels: pd.DataFrame, noise_levels: Union[List[float],
     return noisy_labels
 
 
-def generate(shape: str, m_rel: int, m_irr: int, m_red: int, q: int, n: int, max_r: float = None, min_r: float = None,
-             noise_levels: List[float] = None, name: str = "Dataset test", random_state: int = None,
-             points_distribution: str = None, save_dir: str = None, singlelabel: bool = False,
-             iou_threshold: Union[float, List[float]] = None, mov_vectors: List[List[float]] = None) \
+def generate(n_samples: int, shapes: Union[str, List[Tuple[str, float]]], m_rel: int, m_irr: int, m_red: int,
+             n_classes: int,
+             n_clusters_per_class: int = 1, max_r: float = None, min_r: float = None, random_points: float = 0,
+             noise_levels: List[float] = None,
+             name: str = "Dataset test", random_state: int = None, points_distribution: str = None,
+             save_dir: str = None, singlelabel: bool = False, iou_threshold: Union[float, List[float]] = None,
+             mov_vectors: List[List[float]] = None) \
         -> Tuple[pd.DataFrame, pd.DataFrame, List[pd.DataFrame]]:
     """
     The coordination function for generating the synthetic dataset with the given parameters.
 
     The dataset and the labels are saved into different csv files located at {save_dir}/{name}_{shape}_*.csv
 
-    :param shape: You can choose between "cubes" and "spheres" which determines whether hypercubes or hyperspheres are
-        used.
+    :param shapes: You can choose between "cubes" and "spheres" which determines whether hypercubes or hyperspheres
+        are used.
     :param m_rel: The number of relevant features the dataset should contain.
     :param m_irr: The number of irrelevant features the dataset should contain.
     :param m_red: The number of redundant features the dataset should contain.
-    :param q: The number of possible labels.
-    :param n: The number of points the dataset should contain.
+    :param n_classes: The number of possible labels.
+    :param n_samples: The number of points the dataset should contain.
     :param max_r: The maximal radius for spheres or half-edge for cubes. If not given, the default value of 0.8 is used.
     :param min_r: The minimal radius for spheres or half-edge for cubes. If not given, the default value is calculated
-        by round(((q / 10) + 1) / q, 1).
+        by round(((n_classes / 10) + 1) / n_classes, 1).
     :param noise_levels: A list with the probability that the labels switch. 3 entries for example cause 3 different
         results.
     :param name: The name of the dataset. Used for the save_file.
@@ -511,7 +590,7 @@ def generate(shape: str, m_rel: int, m_irr: int, m_red: int, q: int, n: int, max
     if max_r is None:
         max_r = 0.8
     if min_r is None:
-        min_r = round(((q / 10) + 1) / q, 1)
+        min_r = round(((n_classes / 10) + 1) / n_classes, 1)
 
     if m_rel <= 0:
         raise ValueError("m_rel (the number of relevant features) must be larger than 0!")
@@ -519,14 +598,18 @@ def generate(shape: str, m_rel: int, m_irr: int, m_red: int, q: int, n: int, max
         raise ValueError("m_irr (the number of irrelevant features) must be at least 0!")
     if m_red < 0:
         raise ValueError("m_red (the number of redundant features) must be at least 0!")
-    if q <= 0:
-        raise ValueError("q (the number of labels) must be larger than 0!")
-    if n <= 0:
-        raise ValueError("n (the number of samples) must be larger than 0!")
+    if n_classes <= 0:
+        raise ValueError("n_classes (the number of labels) must be larger than 0!")
+    if n_clusters_per_class <= 0:
+        raise ValueError("n_clusters_per_class (the number of clusters per label) must be larger than 0!")
+    if n_samples <= 0:
+        raise ValueError("n_samples (the number of samples) must be larger than 0!")
     if max_r <= 0:
         raise ValueError("max_r (the maximum radius) must be larger than 0!")
     if min_r <= 0:
         raise ValueError("min_r (the minimum radius) must be larger than 0!")
+    if not (0 <= random_points <= 1):
+        raise ValueError("random_points must be between 0 and 1 (both inclusive)!")
     if noise_levels is not None and any([m < 0 or m > 1 for m in noise_levels]):
         raise ValueError(
             "noise_levels must be at least 0 (no value changes) and at most 1 (every value changes) for every level!")
@@ -535,32 +618,55 @@ def generate(shape: str, m_rel: int, m_irr: int, m_red: int, q: int, n: int, max
     if min_r >= max_r > 0.8:
         raise ValueError("min_r < max_r <= 0.8 is required!")
 
+    if isinstance(shapes, str):
+        if shapes not in ["spheres", "cubes", "moons", "mix"]:
+            raise ValueError(
+                "When passing 'hypershapes' as str it needs to be one of ['spheres', 'cubes', 'moons', 'mix]!")
+    if isinstance(shapes, List):
+        if len(shapes) < 2:
+            raise ValueError("When passing 'hypershapes' as list it needs at least 2 entries!")
+
+        probs = []
+        for _, prob in shapes:
+            probs.append(prob)
+        if round(sum(probs), 1) != 1:
+            raise ValueError("The probabilities for the shapes must sum up to 1!")
+
     random.seed(random_state)
     np.random.seed(random_state)
 
-    hypershapes = generate_small_hypershapes(m_rel, q, max_r, min_r, shape == "spheres", iou_threshold)
+    hypershapes = generate_small_hypershapes(m_rel, n_classes, max_r, min_r, shapes, n_clusters_per_class,
+                                             iou_threshold)
+
+    rp_samples = round(n_samples * random_points)
+    n_samples = n_samples - rp_samples
+
+    # TODO: random label assignen und am Ende zum Datensatz hinzufügen
+    rp = [np.random.rand(m_rel + m_red + m_irr) for _ in range(rp_samples)]
+
+    # TODO:
 
     if points_distribution == "uniform":
-        ns = [int(n / q)] * q
+        ns = [int(n_samples / n_classes)] * n_classes
     else:
         ns = []
-        f = n / np.sum(np.array(hypershapes, dtype=object)[:, 0])
+        f = n_samples / np.sum(np.array(hypershapes, dtype=object)[:, 0])
 
         for r, c in hypershapes:
             ns.append(round(r * f))
 
     i = 0
-    while sum(ns) < n:
-        ns[i % q] += 1
+    while sum(ns) < n_samples:
+        ns[i % n_classes] += 1
         i += 1
     i = 0
-    while sum(ns) > n:
-        ns[i % q] -= 1 if ns[i % q] > 0 else 0
+    while sum(ns) > n_samples:
+        ns[i % n_classes] -= 1 if ns[i % n_classes] > 0 else 0
         i += 1
 
     dataset = []
     for idx, (size, (r, c)) in enumerate(zip(ns, hypershapes)):
-        points = generate_points_inside_hypershape(m_rel, size, c, r, shape,
+        points = generate_points_inside_hypershape(m_rel, size, c, r, hypershapes,
                                                    random.choice(mov_vectors) if mov_vectors is not None else None)
         for point in points:
             if singlelabel:
@@ -570,7 +676,7 @@ def generate(shape: str, m_rel: int, m_irr: int, m_red: int, q: int, n: int, max
     dataset = pd.DataFrame(dataset)
 
     if not singlelabel:
-        labels = assign_labels(dataset, hypershapes, q)
+        labels = assign_labels(dataset, hypershapes, n_classes)
     else:
         labels = dataset[m_rel].to_frame()
         labels.rename({m_rel: "labels"}, axis=1, inplace=True)
@@ -585,9 +691,9 @@ def generate(shape: str, m_rel: int, m_irr: int, m_red: int, q: int, n: int, max
     dataset = dataset[np.random.permutation(dataset.columns)]
 
     if not singlelabel:
-        noisy_labels = add_noise_multilabel(labels.copy(), noise_levels, q)
+        noisy_labels = add_noise_multilabel(labels.copy(), noise_levels, n_classes)
     else:
-        noisy_labels = add_noise_singlelabel(labels.copy(), noise_levels, q)
+        noisy_labels = add_noise_singlelabel(labels.copy(), noise_levels, n_classes)
 
     if save_dir:
         save_dir += "/sl" if singlelabel else "/ml"
@@ -629,8 +735,8 @@ if __name__ == "__main__":
     #                                          "ml_datagen", singlelabel=True)
     #
 
-    dataset, labels, noisy_labels = generate("spheres", 24, 4, 0, 18, 38900, None, None, None, "test", 50494, None,
-                                             "ml_datagen", singlelabel=True, iou_threshold=None,
+    dataset, labels, noisy_labels = generate(38900, "spheres", 24, 4, 0, 18, 4, None, None, 0, None, "test", 50494,
+                                             None, "ml_datagen", singlelabel=True, iou_threshold=None,
                                              mov_vectors=None)
 
     # dataset, labels, noisy_labels = generate("spheres", 4, 4, 0, 18, 38900, None, None, None, "Test", 50494, None,
