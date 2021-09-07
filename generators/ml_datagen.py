@@ -187,7 +187,7 @@ def is_point_inside_hypercube(point: List[float], c: List[float], r: float) -> b
 
 
 def is_point_inside_hypersphere(point: np.array, c: List[float], r: float) -> bool:
-    return np.sum(np.square(np.subtract(point, c))) < r ** 2
+    return np.linalg.norm(point - c) < r
 
 
 def is_point_inside_hypermoon(point: np.array, c: Tuple[List[float]], r: Tuple[float]) -> bool:
@@ -329,7 +329,8 @@ def generate_small_hypersphere(m_rel: int, max_r: float, min_r: float) -> Tuple[
     r = (random.random() * (max_r - min_r)) + min_r
 
     for j in np.random.permutation(m_rel):
-        bound = math.sqrt(((1 - r) ** 2) - np.sum(np.square(c)))
+        bound = ((1 - r) ** 2) - np.sum(np.square(c))
+        bound = math.sqrt(bound) if bound > 0 else 0
         max_c = bound
         min_c = -bound
 
@@ -352,19 +353,40 @@ def generate_small_hypermoons(m_rel: int, max_r: float, min_r: float) -> List[Tu
     c_big, r_big = generate_small_hypersphere(m_rel, max_r, min_r)
 
     c_small = c_big + ((np.random.rand(m_rel) * (0.4 * r_big)) * random.choice([1, -1]))
-    r_small = 0.9 * r_big
+    r_small = 0.95 * r_big
 
     return [(c_big, r_big), (c_small, r_small)]
 
 
-def move_point(point: List[float], mov_vector: List[float]):
+def move_points(dataset: pd.DataFrame, mov_vectors: List[List[float]], labels: pd.DataFrame) -> pd.DataFrame:
+    if mov_vectors is None:
+        return dataset
+
+    group_dict = {}
+
+    groups = labels.groupby("labels").groups
+    for group in groups:
+        if group not in group_dict: group_dict[group] = {"vec": random.choice(mov_vectors)}
+        group_dict[group]["set"] = set(groups[group])
+
+    new_points = []
+    for idx, point in dataset.iterrows():
+        for group in group_dict:
+            if idx in group_dict[group]["set"]:
+                new_points.append(move_point(point.to_numpy(), group_dict[group]["vec"]))
+
+    dataset = pd.DataFrame(new_points)
+
+    return dataset
+
+
+def move_point(point: np.array, mov_vector: List[float]):
     return (np.array(point) + (
-            (mov_vector * np.random.rand(len(point))) * random.choice(np.arange(-1, 1.1, 0.1)))).tolist()
+            (mov_vector * np.random.rand(len(point))) * random.choice(np.arange(-0.7, 0.8, 0.1)))).tolist()
 
 
-def generate_points_inside_hypershape(m_rel: int, n: int, c: Union[List[float], Tuple[List[float]]],
-                                      r: Union[float, Tuple[float]], hypershape: str,
-                                      mov_vector: List[float] = None) -> List[List[float]]:
+def generate_points_inside_hypershape(m_rel: int, n: int, c: Union[List[float], Tuple[List[float], List[float]]],
+                                      r: Union[float, Tuple[float, float]], hypershape: str) -> List[List[float]]:
     """
     Populating the beforehand created hypershapes (cubes and spheres) with points (evenly distributed). This function
     populates one given hypershape. So, you have to execute it for every hypershape.
@@ -388,9 +410,8 @@ def generate_points_inside_hypershape(m_rel: int, n: int, c: Union[List[float], 
             x = generate_point_inside_hypercube(m_rel, c, r)
         elif hypershape == "moons":
             x = generate_point_inside_hypermoon(m_rel, c, r)
-
-        if mov_vector is not None:
-            x = move_point(x, mov_vector)
+        else:
+            raise ValueError("Hypershape needs to be 'cubes', 'spheres' or 'moons'!")
 
         xs.append(x)
 
@@ -411,7 +432,8 @@ def generate_point_inside_hypersphere(m_rel: int, c: List[float], r: float) -> L
     x = [0] * m_rel
 
     for j in np.random.permutation(m_rel):
-        bound = math.sqrt(r ** 2 - sum([(x_h - c_h) ** 2 if x_h != 0 else 0 for x_h, c_h in zip(x, c)]))
+        bound = r ** 2 - sum([(x_h - c_h) ** 2 if x_h != 0 else 0 for x_h, c_h in zip(x, c)])
+        bound = math.sqrt(bound) if bound > 0 else 0
 
         max_x = c[j] + bound
         min_x = c[j] - bound
@@ -430,7 +452,8 @@ def generate_point_inside_hypercube(m_rel: int, c: List[float], r: float) -> np.
     return list(np.random.rand(m_rel) * r * 2 - r + np.array(c))
 
 
-def generate_point_inside_hypermoon(m_rel: int, c: Tuple[List[float]], r: Tuple[float]) -> List[float]:
+def generate_point_inside_hypermoon(m_rel: int, c: Tuple[List[float], List[float]], r: Tuple[float, float]) \
+        -> List[float]:
     c_big, c_small = c
     r_big, r_small = r
 
@@ -474,7 +497,7 @@ def assign_labels(dataset: pd.DataFrame, hypershapes: Dict[int, Dict], n_classes
     return labels
 
 
-def assign_random_labels(dataset: List[List[float]], n_classes: int) -> pd.DataFrame:
+def assign_random_labels(dataset: pd.DataFrame, n_classes: int) -> pd.DataFrame:
     labels = np.zeros(shape=(len(dataset), n_classes))
     labels = pd.DataFrame(labels, columns=["l{}".format(i) for i in range(n_classes)])
     for label in labels.values:
@@ -628,8 +651,8 @@ def calculate_points_distribution(n_samples: int, n_classes: int, hypershapes: D
     return ns
 
 
-def populate_hypershapes(m_rel: int, points_distribution: List[int], hypershapes: Dict[int, Dict], n_classes: int,
-                         singlelabel: bool = True, mov_vectors: List[List[float]] = None) -> pd.DataFrame:
+def populate_hypershapes(m_rel: int, points_distribution: List[int], hypershapes: Dict[int, Dict], n_classes: int) \
+        -> pd.DataFrame:
     dataset = []
 
     for cla in hypershapes.keys():
@@ -660,12 +683,10 @@ def populate_hypershapes(m_rel: int, points_distribution: List[int], hypershapes
                 c = shape["center"]
                 r = shape["radius"]
 
-            points = generate_points_inside_hypershape(m_rel, size, c, r, shape["shape"],
-                                                       random.choice(mov_vectors) if mov_vectors is not None else None)
+            points = generate_points_inside_hypershape(m_rel, size, c, r, shape["shape"])
 
             for point in points:
-                if singlelabel:
-                    point.append(int(cla))
+                point.append(int(cla))
                 dataset.append(point)
 
     return pd.DataFrame(dataset)
@@ -707,8 +728,7 @@ def make_features_categorical(dataset: pd.DataFrame, random_points: pd.DataFrame
 
 def generate(n_samples: int, shapes: Union[str, List[Tuple[str, float]]], m_rel: int, m_irr: int, m_red: int,
              n_classes: int, n_clusters_per_class: int = 1, categorical_variabels: List[int] = None,
-             max_r: float = None,
-             min_r: float = None, random_points: float = 0, noise_levels: List[float] = None,
+             max_r: float = None, min_r: float = None, random_points: float = 0, noise_levels: List[float] = None,
              name: str = "Dataset test", random_state: int = None, points_distribution: str = None,
              save_dir: str = None, singlelabel: bool = False, iou_threshold: Union[float, List[float]] = None,
              mov_vectors: List[List[float]] = None) \
@@ -747,10 +767,10 @@ def generate(n_samples: int, shapes: Union[str, List[Tuple[str, float]]], m_rel:
         noisy labels (one pandas.DataFrame of labels for every noise level).
     """
 
-    if max_r is None:
-        max_r = 0.8
     if min_r is None:
         min_r = round(((n_classes / 10) + 1) / n_classes, 1)
+    if max_r is None:
+        max_r = min(min_r * 2, 0.8)
 
     if m_rel <= 0:
         raise ValueError("m_rel (the number of relevant features) must be larger than 0!")
@@ -809,17 +829,21 @@ def generate(n_samples: int, shapes: Union[str, List[Tuple[str, float]]], m_rel:
 
     ns = calculate_points_distribution(n_samples, n_classes, hypershapes, points_distribution)
 
-    dataset = populate_hypershapes(m_rel, ns, hypershapes, n_classes, singlelabel, mov_vectors)
+    dataset = populate_hypershapes(m_rel, ns, hypershapes, n_classes)
+
+    single_labels = dataset[m_rel].to_frame()
+    single_labels.rename({m_rel: "labels"}, axis=1, inplace=True)
+    dataset.drop(m_rel, axis=1, inplace=True)
 
     if not singlelabel:
         labels = assign_labels(dataset, hypershapes, n_classes)
         random_points_labels = assign_random_labels(rp, n_classes)
     else:
-        labels = dataset[m_rel].to_frame()
-        labels.rename({m_rel: "labels"}, axis=1, inplace=True)
-        dataset.drop(m_rel, axis=1, inplace=True)
+        labels = single_labels
         random_points_labels = pd.DataFrame([random.randrange(0, n_classes) for _ in range(len(rp))],
                                             columns=["labels"])
+
+    dataset = move_points(dataset, mov_vectors, single_labels)
 
     if categorical_variabels is not None:
         dataset, rp = make_features_categorical(dataset, rp, categorical_variabels)
@@ -862,8 +886,8 @@ def plot_sl(dataset, labels):
     ax = fig.add_subplot(111)
     x = dataset["rel0"]
     y = dataset["rel1"]
-    plt.xlim(-1, 1)
-    plt.ylim(-1, 3)
+    plt.xlim(-2, 2)
+    plt.ylim(-2, 2)
     ax.set_aspect('equal', adjustable='box')
     plt.scatter(x, y, c=labels.values)
     plt.show()
@@ -924,10 +948,10 @@ if __name__ == "__main__":
     #
     # plot_sl(dataset, labels)
 
-    # dataset, labels, noisy_labels = generate(10000, "moons", 2, 0, 0, 5, 2, None, 0.4, 0.2, 0, None, "Test", 2, None,
-    #                                          "ml_datagen", singlelabel=True)
-    #
-    # plot_sl(dataset, labels)
+    dataset, labels, noisy_labels = generate(10000, "cubes", 2, 0, 0, 5, 2, None, 0.4, 0.2, 0, None, "Test", 2, None,
+                                             "ml_datagen", singlelabel=True, mov_vectors=np.random.rand(20, 2))
+
+    plot_sl(dataset, labels)
 
     # dataset, labels, noisy_labels = generate(10000, "moons", 2, 0, 0, 5, 2, None, 0.4, 0.2, 0, None, "Test", 2, None,
     #                                          "ml_datagen", singlelabel=True, iou_threshold=0.3)
@@ -939,10 +963,10 @@ if __name__ == "__main__":
     #
     # plot_sl(dataset, labels)
 
-    dataset, labels, noisy_labels = generate(10000, "mix", 2, 0, 0, 5, 2, [3], 0.4, 0.2, 0, None, "Test", 2, None,
-                                             "ml_datagen", singlelabel=True)
-
-    plot_sl(dataset, labels)
+    # dataset, labels, noisy_labels = generate(10000, "mix", 2, 0, 0, 5, 2, None, 0.3, 0.1, 0, None, "Test", 2, None,
+    #                                          "ml_datagen", singlelabel=True)
+    #
+    # plot_sl(dataset, labels)
 
     # dataset, labels, noisy_labels = generate(10000, "mix", 2, 0, 0, 5, 2, None, 0.4, 0.2, 0, None, "Test", 2, None,
     #                                          "ml_datagen", singlelabel=True, iou_threshold=0.3)
