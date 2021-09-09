@@ -5,6 +5,7 @@ import pandas as pd
 import seaborn as sns
 from sklearn.datasets import load_boston, load_iris, load_diabetes, load_wine, \
     load_breast_cancer
+from tqdm import tqdm
 
 from prepare_dataset import read_and_parse_dataset
 
@@ -132,11 +133,11 @@ def str_split(string: str) -> str:
     return string.split(" ")[0]
 
 
-def beginner_datasets():
+def other_datasets():
     path = Path("uncleaned_datasets/")
     files = list(path.glob("*"))
 
-    for file in files:
+    for file in tqdm(files):
         name = file.name.split(".")[0]
 
         if not Path("cleaned_datasets/{}_dataset.csv".format(name)).exists():
@@ -149,15 +150,15 @@ def beginner_datasets():
                 labels = None
 
         try:
-            plot_scatter_matrix(dataset, name, labels, "beginner")
+            plot_scatter_matrix(dataset, name, labels, "other")
         except Exception as e:
             print(e, name)
 
 
 if __name__ == "__main__":
     # sklearn_datasets()
-    seaborn_datasets()
-    beginner_datasets()
+    # seaborn_datasets()
+    other_datasets()
 
 problems = ["bank", "blood", "credit", "elections", "facebook"]
 large = ["elections", "gold", "house", "mice"]
