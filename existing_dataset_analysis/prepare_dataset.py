@@ -16,6 +16,9 @@ def read_and_parse_dataset(dataset_path: str, save_path: str):
     with open(dataset_path, "r") as f:
         df = pd.read_csv(f, sep=",")
 
+    if parsing_args["drop_columns"] is not None:
+        df.drop(parsing_args["drop_columns"], axis=1, inplace=True)
+
     for column, dtype in df.dtypes.items():
         if dtype not in ["int64", "float64"]:
             if dtype.name != "category":

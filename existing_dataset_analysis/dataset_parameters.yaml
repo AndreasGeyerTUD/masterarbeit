@@ -29,7 +29,7 @@ adult:
   {
     url: "https://www.kaggle.com/kashnitsky/mlcourse",
     target: "Target",
-    drop_columns: [ "enrollee_id" ],
+    drop_columns: null,
     kaggle_name: "kashnitsky/mlcourse",
     save_name: "adult",
     files: [ "adult.csv" ]
@@ -470,7 +470,7 @@ glass:
   {
     url: "https://www.kaggle.com/ahmettezcantekin/beginner-datasets",
     target: "Type",
-    drop_columns: [ "animal_name" ],
+    drop_columns: null,
     kaggle_name: "ahmettezcantekin/beginner-datasets",
     save_name: "glass",
     files: [ "glass.csv" ]

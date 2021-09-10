@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import List
 
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -8,6 +9,7 @@ from sklearn.datasets import load_boston, load_iris, load_diabetes, load_wine, \
 from tqdm import tqdm
 
 from prepare_dataset import read_and_parse_dataset
+import multiprocessing as mp
 
 
 def split_columns_for_plot(columns: list) -> list[list]:
@@ -52,13 +54,13 @@ def plot_scatter_matrix(data: pd.DataFrame, name: str, labels: pd.DataFrame = No
 
     for i in range(len(splits)):
         for j in range(len(splits)):
-            g = sns.PairGrid(data, hue=labels_column, diag_sharey=False, x_vars=splits[i], y_vars=splits[j])
+            g = sns.PairGrid(data, hue=labels_column, palette="tab10", diag_sharey=False, x_vars=splits[i], y_vars=splits[j])
             if i == j:
                 g.map_upper(sns.scatterplot, linewidth=0)
-                g.map_lower(sns.kdeplot)
-                g.map_diag(sns.kdeplot)
+                g.map_lower(sns.kdeplot, warn_singular=False)
+                g.map_diag(sns.kdeplot, warn_singular=False)
             elif i < j:
-                g.map(sns.kdeplot)
+                g.map(sns.kdeplot, warn_singular=False)
             elif i > j:
                 g.map(sns.scatterplot, linewidth=0)
 
@@ -76,7 +78,7 @@ def plot_scatter_matrix(data: pd.DataFrame, name: str, labels: pd.DataFrame = No
             if origin is not None:
                 save_name = "{}_{}".format(origin, save_name)
 
-            g.savefig("dataset_plots/{}.pdf".format(save_name), format="pdf")
+            g.savefig("dataset_plots/{}.png".format(save_name), format="png")
             # plt.show()
             plt.close()
 
@@ -133,10 +135,7 @@ def str_split(string: str) -> str:
     return string.split(" ")[0]
 
 
-def other_datasets():
-    path = Path("uncleaned_datasets/")
-    files = list(path.glob("*"))
-
+def other_datasets(files: List):
     for file in tqdm(files):
         name = file.name.split(".")[0]
 
@@ -155,10 +154,23 @@ def other_datasets():
             print(e, name)
 
 
+def split_list(a_list, wanted_parts=1):
+    length = len(a_list)
+    return [a_list[i * length // wanted_parts: (i + 1) * length // wanted_parts]
+            for i in range(wanted_parts)]
+
+
 if __name__ == "__main__":
     # sklearn_datasets()
     # seaborn_datasets()
-    other_datasets()
+
+    path = Path("uncleaned_datasets/")
+    files = list(path.glob("*"))
+
+    cores = mp.cpu_count() - 4
+
+    pool = mp.Pool(cores)
+    pool.map(other_datasets, split_list(files, cores))
 
 problems = ["bank", "blood", "credit", "elections", "facebook"]
 large = ["elections", "gold", "house", "mice"]
