@@ -4,6 +4,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.datasets import make_classification
+from generators.ml_datagen import generate
 from tqdm import tqdm
 
 
@@ -55,15 +56,20 @@ def _main(save_dir: str):
         label_2 = np.zeros((res + 1, res + 1)).astype(int)
 
         for i in tqdm(range(res * 10)):
-            x, y = make_classification(n_samples=res * 10, n_features=2, n_informative=2, n_redundant=0,
-                                       n_clusters_per_class=1,
-                                       random_state=i)
+            # x, y = make_classification(n_samples=res * 10, n_features=2, n_informative=2, n_redundant=0,
+            #                            n_clusters_per_class=1,
+            #                            random_state=i)
+
+            x, y, _ = generate(n_samples=res * 10, m_rel=2, m_irr=0, m_red=0, n_classes=2, n_clusters_per_class=1, shapes="mix", random_state=i, singlelabel=True)
+
+            x = x.to_numpy()
+            y = y.to_numpy()
 
             x_round = _round((x - x.min(0)) / x.ptp(0), res)
 
-            data = np.concatenate([x_round, y[:, None]], axis=1)
+            # data = np.concatenate([x_round, y[:, None]], axis=1)
 
-            for x_1, x_2, y in data:
+            for (x_1, x_2), y in zip(x_round, y):
                 results[x_1][x_2] += 1
 
                 if y == 0:
@@ -89,7 +95,7 @@ def _main(save_dir: str):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('-d', "--directory", action='store', type=str, default="points_distribution",
+    parser.add_argument('-d', "--directory", action='store', type=str, default="points_distribution_ml_datagen",
                         help='Dictionary where to save images and results.')
 
     args = parser.parse_args()

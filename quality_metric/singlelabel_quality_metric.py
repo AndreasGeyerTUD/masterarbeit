@@ -285,7 +285,6 @@ if __name__ == "__main__":
 
     _main(args.directory, dataset_config, args.plot, args.debug)
 
-# TODO: Classification/Clustering Abgrenzung und Untersuchung
 
 # https://machinelearningmastery.com/clustering-algorithms-with-python/#:~:text=Cluster%20analysis%2C%20or%20clustering%2C%20is,or%20clusters%20in%20feature%20space.
 # https://scikit-learn.org/stable/modules/model_evaluation.html
