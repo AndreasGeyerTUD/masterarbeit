@@ -4,7 +4,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy import stats
-from sklearn.datasets import make_classification
+from sklearn.datasets import make_classification, make_blobs
 from tqdm import tqdm
 
 from generators.ml_datagen import generate
@@ -35,7 +35,7 @@ def heatmap_plot_2d(data: np.array, res: int, title: str, file_path: str, cmap: 
         ax.set_yticks([])
         plt.savefig("{}/{}_{}.pdf".format(file_path, cur_title, cmap), format="pdf")
         # plt.show()
-        plt.clf()
+        plt.close()
 
 
 def heatmap_plot_3d(data, file_path: str):
@@ -63,7 +63,7 @@ def heatmap_plot_3d(data, file_path: str):
 
 
 def _main(save_dir: str):
-    for res in [10, 100, 1000, 10000]:
+    for res in [10, 100, 1000]:
         cwd = save_dir + "/" + str(res)
         Path(cwd).mkdir(parents=True, exist_ok=True)
 
@@ -73,11 +73,13 @@ def _main(save_dir: str):
             # x, y = make_classification(n_samples=res * 10, n_features=3, n_informative=3, n_redundant=0,
             #                            n_clusters_per_class=1, random_state=i)
 
-            x, y, _ = generate(n_samples=res * 10, m_rel=3, m_irr=0, m_red=0, n_classes=1, n_clusters_per_class=1,
-                               shapes="mix", random_state=i, singlelabel=True)
+            # x, y, _ = generate(n_samples=res * 10, m_rel=3, m_irr=0, m_red=0, n_classes=1, n_clusters_per_class=1,
+            #                    shapes="mix", random_state=i, singlelabel=True)
+            #
+            # x = x.to_numpy()
+            # y = y.to_numpy()
 
-            x = x.to_numpy()
-            y = y.to_numpy()
+            x, y = make_blobs(n_samples=res * 10, centers=1, n_features=3, random_state=i)
 
             data = _round((x - x.min(0)) / x.ptp(0), res)
 
@@ -93,7 +95,7 @@ def _main(save_dir: str):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('-d', "--directory", action='store', type=str, default="points_distribution_3d_ml_datagen",
+    parser.add_argument('-d', "--directory", action='store', type=str, default="points_distribution_3d_make_blobs",
                         help='Dictionary where to save images and results.')
 
     args = parser.parse_args()

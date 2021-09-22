@@ -731,7 +731,7 @@ def generate(n_samples: int, shapes: Union[str, List[Tuple[str, float]]], m_rel:
              max_r: float = None, min_r: float = None, random_points: float = 0, noise_levels: List[float] = None,
              name: str = "Dataset test", random_state: int = None, points_distribution: str = None,
              save_dir: str = None, singlelabel: bool = False, iou_threshold: Union[float, List[float]] = None,
-             mov_vectors: List[List[float]] = None) \
+             mov_vectors: Union[List[List[float]], str] = None) \
         -> Tuple[pd.DataFrame, pd.DataFrame, List[pd.DataFrame]]:
     """
     The coordination function for generating the synthetic dataset with the given parameters.
@@ -817,6 +817,9 @@ def generate(n_samples: int, shapes: Union[str, List[Tuple[str, float]]], m_rel:
 
     random.seed(random_state)
     np.random.seed(random_state)
+
+    if mov_vectors is not None and mov_vectors == "random":
+        mov_vectors = np.random.rand(20, m_rel)
 
     hypershapes = generate_small_hypershapes(m_rel, n_classes, max_r, min_r, shapes, n_clusters_per_class,
                                              iou_threshold)
