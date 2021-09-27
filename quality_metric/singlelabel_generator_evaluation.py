@@ -54,7 +54,7 @@ def plot_clusters(X, pred, dir_name: str, title: str):
     plt.close()
 
 
-def error_with_label_permutation(y_true, y_pred, metric):
+def error_with_lp(y_true, y_pred, metric):
     """
     Permute labels of y_pred to match y_true as much as possible
 
@@ -97,22 +97,23 @@ def calc_clustering_metrics(y_true, y_pred):
 
 
 def calc_classification_metrics_clust(y_true, y_pred):
-    return {"f1_score": error_with_label_permutation(y_true, y_pred, partial(f1_score, average="micro")),
-            "hamming_loss": error_with_label_permutation(y_true, y_pred, hamming_loss),
-            "jaccard_score": error_with_label_permutation(y_true, y_pred, partial(jaccard_score, average="micro")),
-            "accuracy_score": error_with_label_permutation(y_true, y_pred, accuracy_score),
-            "recall_score": error_with_label_permutation(y_true, y_pred, partial(recall_score, average="micro")),
-            "precision_score": error_with_label_permutation(y_true, y_pred, partial(precision_score, average="micro"))
-            }
+    return {
+        "f1_score": error_with_lp(y_true, y_pred, partial(f1_score, average="macro", zero_division=0)),
+        "hamming_loss": error_with_lp(y_true, y_pred, hamming_loss),
+        "jaccard_score": error_with_lp(y_true, y_pred, partial(jaccard_score, average="macro", zero_division=0)),
+        "accuracy_score": error_with_lp(y_true, y_pred, accuracy_score),
+        "recall_score": error_with_lp(y_true, y_pred, partial(recall_score, average="macro", zero_division=0)),
+        "precision_score": error_with_lp(y_true, y_pred, partial(precision_score, average="macro", zero_division=0))
+    }
 
 
 def calc_classification_metrics_class(y_true, y_pred):
-    return {"f1_score": f1_score(y_true, y_pred, average='micro'),
+    return {"f1_score": f1_score(y_true, y_pred, average='macro', zero_division=0),
             "hamming_loss": hamming_loss(y_true, y_pred),
-            "jaccard_score": jaccard_score(y_true, y_pred, average="micro"),
+            "jaccard_score": jaccard_score(y_true, y_pred, average="macro", zero_division=0),
             "accuracy_score": accuracy_score(y_true, y_pred),
-            "recall_score": recall_score(y_true, y_pred, average="micro"),
-            "precision_score": precision_score(y_true, y_pred, average="micro")}
+            "recall_score": recall_score(y_true, y_pred, average="macro", zero_division=0),
+            "precision_score": precision_score(y_true, y_pred, average="macro", zero_division=0)}
 
 
 def affinity_propagation(X: np.ndarray, n_clusters: int = None):
@@ -185,8 +186,8 @@ def gaussian_mixture_model(X: np.ndarray, n_clusters: int):
     return model.predict(X)
 
 
-clustering_algorithms = [affinity_propagation, agglomerative, birch, dbscan, k_means, mean_shift,
-                         mini_batch_k_means, optics, spectral_clustering, gaussian_mixture_model]
+clustering_algorithms = [affinity_propagation, agglomerative, birch, dbscan, k_means, mini_batch_k_means, mean_shift,
+                         optics, spectral_clustering, gaussian_mixture_model]
 
 classification_algorithms = [KNeighborsClassifier, DecisionTreeClassifier, RandomForestClassifier, LinearSVC,
                              LogisticRegression, GaussianNB]
@@ -194,14 +195,44 @@ classification_algorithms = [KNeighborsClassifier, DecisionTreeClassifier, Rando
 
 def generate_random_dataset(i: int):
     if i < 100:
-        dataset, labels = make_classification(n_samples=5000, n_features=5, n_classes=4, n_informative=2,
+        dataset, labels = make_classification(n_samples=1000, n_features=2, n_classes=4, n_informative=2,
                                               n_redundant=0, n_repeated=0, n_clusters_per_class=1, random_state=i)
-    elif i <200:
+    elif i < 200:
+        dataset, labels, _ = generate(n_samples=1000, m_rel=2, m_irr=0, m_red=0, n_classes=4, n_clusters_per_class=1,
+                                      shapes="mix", random_state=i, singlelabel=True, mov_vectors="random")
+        dataset = dataset.to_numpy()
+        labels = labels.to_numpy().reshape(len(labels))
+    elif i < 300:
+        dataset, labels = make_blobs(n_samples=1000, centers=4, n_features=2, random_state=i)
+    elif i < 400:
+        dataset, labels = make_classification(n_samples=1000, n_features=5, n_classes=4, n_informative=5,
+                                              n_redundant=0, n_repeated=0, n_clusters_per_class=1, random_state=i)
+    elif i < 500:
+        dataset, labels, _ = generate(n_samples=1000, m_rel=5, m_irr=0, m_red=0, n_classes=4, n_clusters_per_class=1,
+                                      shapes="mix", random_state=i, singlelabel=True, mov_vectors="random")
+        dataset = dataset.to_numpy()
+        labels = labels.to_numpy().reshape(len(labels))
+    elif i < 600:
+        dataset, labels = make_blobs(n_samples=1000, centers=4, n_features=5, random_state=i)
+    elif i < 700:
+        dataset, labels = make_classification(n_samples=5000, n_features=2, n_classes=4, n_informative=2,
+                                              n_redundant=0, n_repeated=0, n_clusters_per_class=1, random_state=i)
+    elif i < 800:
+        dataset, labels, _ = generate(n_samples=5000, m_rel=2, m_irr=0, m_red=0, n_classes=4, n_clusters_per_class=1,
+                                      shapes="mix", random_state=i, singlelabel=True, mov_vectors="random")
+        dataset = dataset.to_numpy()
+        labels = labels.to_numpy().reshape(len(labels))
+    elif i < 900:
+        dataset, labels = make_blobs(n_samples=5000, centers=4, n_features=2, random_state=i)
+    elif i < 1000:
+        dataset, labels = make_classification(n_samples=5000, n_features=5, n_classes=4, n_informative=5,
+                                              n_redundant=0, n_repeated=0, n_clusters_per_class=1, random_state=i)
+    elif i < 1100:
         dataset, labels, _ = generate(n_samples=5000, m_rel=5, m_irr=0, m_red=0, n_classes=4, n_clusters_per_class=1,
                                       shapes="mix", random_state=i, singlelabel=True, mov_vectors="random")
         dataset = dataset.to_numpy()
         labels = labels.to_numpy().reshape(len(labels))
-    else:
+    elif i < 1200:
         dataset, labels = make_blobs(n_samples=5000, centers=4, n_features=5, random_state=i)
 
     return dataset, labels
@@ -225,7 +256,8 @@ def clustering(x, y, dir_name: str):
                          "expected_clusters": n_clusters,
                          "time": time_taken}
 
-        plot_clusters(x, pred, dir_name, name)
+        if x.shape[1] == 2:
+            plot_clusters(x, pred, dir_name, name)
 
     return results
 
@@ -254,7 +286,8 @@ def classification(x, y, dir_name: str):
 
         whole_pred = model.predict(x)
 
-        plot_clusters(x, whole_pred, dir_name, name)
+        if x.shape[1] == 2:
+            plot_clusters(x, whole_pred, dir_name, name)
 
     return results
 
@@ -263,12 +296,14 @@ def _main(l: list):
     results = {}
     for i in tqdm(l):
         dataset, labels = generate_random_dataset(i)
-        plot_clusters(dataset, labels, "evaluation/{}".format(i), "initial_clustering")
+        if dataset.shape[1] == 2:
+            plot_clusters(dataset, labels, "evaluation/{}".format(i), "initial_clustering")
 
         results["clustering_alg"] = clustering(dataset, labels, "evaluation/{}".format(i))
 
         results["classification_alg"] = classification(dataset, labels, "evaluation/{}".format(i))
 
+        Path("evaluation/{}".format(i)).mkdir(parents=True, exist_ok=True)
         with open("{}/results.json".format("evaluation/{}".format(i)), "w") as file:
             json.dump(results, file)
 
@@ -280,9 +315,7 @@ def split_list(a_list, wanted_parts=1):
 
 
 if __name__ == "__main__":
-    cores = mp.cpu_count() - 8
+    cores = 12
 
     pool = mp.Pool(cores)
-    pool.map(_main, split_list(range(300), cores))
-
-
+    pool.map(_main, split_list(list(range(300, 600)) + list(range(900, 1200)), cores))

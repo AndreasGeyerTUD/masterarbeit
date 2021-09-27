@@ -1,0 +1,2154 @@
+{
+  "clustering_alg": {
+    "affinity_propagation": {
+      "clustering": {
+        "adjusted_mutual_info_score": {
+          "mean": 0.3697,
+          "25th": 0.3504,
+          "75th": 0.3907,
+          "min": 0.28,
+          "min_ind": 68,
+          "max": 0.4453,
+          "max_ind": 69
+        },
+        "adjusted_rand_score": {
+          "mean": 0.0819,
+          "25th": 0.0752,
+          "75th": 0.0892,
+          "min": 0.0531,
+          "min_ind": 68,
+          "max": 0.1038,
+          "max_ind": 60
+        },
+        "completeness_score": {
+          "mean": 0.2646,
+          "25th": 0.2515,
+          "75th": 0.2787,
+          "min": 0.2061,
+          "min_ind": 68,
+          "max": 0.3141,
+          "max_ind": 69
+        },
+        "fowlkes_mallows_score": {
+          "mean": 0.2192,
+          "25th": 0.2083,
+          "75th": 0.2313,
+          "min": 0.169,
+          "min_ind": 68,
+          "max": 0.2572,
+          "max_ind": 69
+        },
+        "homogeneity_score": {
+          "mean": 0.7419,
+          "25th": 0.7095,
+          "75th": 0.7757,
+          "min": 0.5943,
+          "min_ind": 68,
+          "max": 0.8775,
+          "max_ind": 69
+        },
+        "v_measure_score": {
+          "mean": 0.3901,
+          "25th": 0.3716,
+          "75th": 0.4104,
+          "min": 0.3061,
+          "min_ind": 68,
+          "max": 0.4626,
+          "max_ind": 69
+        }
+      },
+      "classification": {
+        "f1_score": {
+          "mean": 0.0028,
+          "25th": 0.0014,
+          "75th": 0.0036,
+          "min": 0.0,
+          "min_ind": 16,
+          "max": 0.0136,
+          "max_ind": 60
+        },
+        "hamming_loss": {
+          "mean": 0.9798,
+          "25th": 0.973,
+          "75th": 0.99,
+          "min": 0.91,
+          "min_ind": 60,
+          "max": 1.0,
+          "max_ind": 16
+        },
+        "jaccard_score": {
+          "mean": 0.0015,
+          "25th": 0.0007,
+          "75th": 0.002,
+          "min": 0.0,
+          "min_ind": 16,
+          "max": 0.0074,
+          "max_ind": 60
+        },
+        "accuracy_score": {
+          "mean": 0.0202,
+          "25th": 0.01,
+          "75th": 0.027,
+          "min": 0.0,
+          "min_ind": 16,
+          "max": 0.09,
+          "max_ind": 60
+        },
+        "recall_score": {
+          "mean": 0.0015,
+          "25th": 0.0007,
+          "75th": 0.002,
+          "min": 0.0,
+          "min_ind": 16,
+          "max": 0.0077,
+          "max_ind": 60
+        },
+        "precision_score": {
+          "mean": 0.0196,
+          "25th": 0.0084,
+          "75th": 0.0278,
+          "min": 0.0,
+          "min_ind": 16,
+          "max": 0.0646,
+          "max_ind": 60
+        }
+      },
+      "found_clusters": {
+        "mean": 53.69,
+        "25th": 52.0,
+        "75th": 56.0,
+        "min": 44,
+        "min_ind": 57,
+        "max": 63,
+        "max_ind": 42
+      },
+      "expected_clusters": {
+        "mean": 4.0,
+        "25th": 4.0,
+        "75th": 4.0,
+        "min": 4,
+        "min_ind": 0,
+        "max": 4,
+        "max_ind": 0
+      },
+      "time": {
+        "mean": 2.3903,
+        "25th": 2.0897,
+        "75th": 2.6457,
+        "min": 1.4128,
+        "min_ind": 69,
+        "max": 3.6162,
+        "max_ind": 1
+      }
+    },
+    "agglomerative": {
+      "clustering": {
+        "adjusted_mutual_info_score": {
+          "mean": 0.4269,
+          "25th": 0.3485,
+          "75th": 0.4883,
+          "min": 0.1994,
+          "min_ind": 68,
+          "max": 0.6835,
+          "max_ind": 32
+        },
+        "adjusted_rand_score": {
+          "mean": 0.363,
+          "25th": 0.2745,
+          "75th": 0.4354,
+          "min": 0.1423,
+          "min_ind": 68,
+          "max": 0.6973,
+          "max_ind": 32
+        },
+        "completeness_score": {
+          "mean": 0.4405,
+          "25th": 0.3649,
+          "75th": 0.5074,
+          "min": 0.2063,
+          "min_ind": 68,
+          "max": 0.6896,
+          "max_ind": 32
+        },
+        "fowlkes_mallows_score": {
+          "mean": 0.5339,
+          "25th": 0.4716,
+          "75th": 0.5823,
+          "min": 0.3663,
+          "min_ind": 68,
+          "max": 0.7743,
+          "max_ind": 32
+        },
+        "homogeneity_score": {
+          "mean": 0.4183,
+          "25th": 0.3397,
+          "75th": 0.4744,
+          "min": 0.1981,
+          "min_ind": 68,
+          "max": 0.6795,
+          "max_ind": 32
+        },
+        "v_measure_score": {
+          "mean": 0.4289,
+          "25th": 0.3507,
+          "75th": 0.49,
+          "min": 0.2021,
+          "min_ind": 68,
+          "max": 0.6845,
+          "max_ind": 32
+        }
+      },
+      "classification": {
+        "f1_score": {
+          "mean": 0.6338,
+          "25th": 0.5525,
+          "75th": 0.7163,
+          "min": 0.4118,
+          "min_ind": 9,
+          "max": 0.8736,
+          "max_ind": 83
+        },
+        "hamming_loss": {
+          "mean": 0.3605,
+          "25th": 0.2775,
+          "75th": 0.4428,
+          "min": 0.129,
+          "min_ind": 83,
+          "max": 0.542,
+          "max_ind": 68
+        },
+        "jaccard_score": {
+          "mean": 0.4838,
+          "25th": 0.3946,
+          "75th": 0.567,
+          "min": 0.287,
+          "min_ind": 9,
+          "max": 0.7777,
+          "max_ind": 83
+        },
+        "accuracy_score": {
+          "mean": 0.6395,
+          "25th": 0.5572,
+          "75th": 0.7225,
+          "min": 0.458,
+          "min_ind": 68,
+          "max": 0.871,
+          "max_ind": 83
+        },
+        "recall_score": {
+          "mean": 0.6396,
+          "25th": 0.557,
+          "75th": 0.7227,
+          "min": 0.458,
+          "min_ind": 68,
+          "max": 0.8709,
+          "max_ind": 83
+        },
+        "precision_score": {
+          "mean": 0.6736,
+          "25th": 0.5925,
+          "75th": 0.7548,
+          "min": 0.4331,
+          "min_ind": 9,
+          "max": 0.8885,
+          "max_ind": 83
+        }
+      },
+      "found_clusters": {
+        "mean": 4.0,
+        "25th": 4.0,
+        "75th": 4.0,
+        "min": 4,
+        "min_ind": 0,
+        "max": 4,
+        "max_ind": 0
+      },
+      "expected_clusters": {
+        "mean": 4.0,
+        "25th": 4.0,
+        "75th": 4.0,
+        "min": 4,
+        "min_ind": 0,
+        "max": 4,
+        "max_ind": 0
+      },
+      "time": {
+        "mean": 0.0676,
+        "25th": 0.053,
+        "75th": 0.075,
+        "min": 0.04,
+        "min_ind": 87,
+        "max": 0.2301,
+        "max_ind": 0
+      }
+    },
+    "birch": {
+      "clustering": {
+        "adjusted_mutual_info_score": {
+          "mean": 0.3451,
+          "25th": 0.2797,
+          "75th": 0.3956,
+          "min": 0.1216,
+          "min_ind": 68,
+          "max": 0.6001,
+          "max_ind": 71
+        },
+        "adjusted_rand_score": {
+          "mean": 0.2781,
+          "25th": 0.214,
+          "75th": 0.3505,
+          "min": 0.0712,
+          "min_ind": 68,
+          "max": 0.568,
+          "max_ind": 71
+        },
+        "completeness_score": {
+          "mean": 0.4106,
+          "25th": 0.3397,
+          "75th": 0.4672,
+          "min": 0.1478,
+          "min_ind": 68,
+          "max": 0.7263,
+          "max_ind": 10
+        },
+        "fowlkes_mallows_score": {
+          "mean": 0.5092,
+          "25th": 0.4664,
+          "75th": 0.5469,
+          "min": 0.363,
+          "min_ind": 68,
+          "max": 0.7037,
+          "max_ind": 71
+        },
+        "homogeneity_score": {
+          "mean": 0.3007,
+          "25th": 0.2427,
+          "75th": 0.3491,
+          "min": 0.1065,
+          "min_ind": 68,
+          "max": 0.5332,
+          "max_ind": 71
+        },
+        "v_measure_score": {
+          "mean": 0.3467,
+          "25th": 0.2815,
+          "75th": 0.3972,
+          "min": 0.1238,
+          "min_ind": 68,
+          "max": 0.6011,
+          "max_ind": 71
+        }
+      },
+      "classification": {
+        "f1_score": {
+          "mean": 0.2006,
+          "25th": 0.1303,
+          "75th": 0.2619,
+          "min": 0.0052,
+          "min_ind": 30,
+          "max": 0.5005,
+          "max_ind": 55
+        },
+        "hamming_loss": {
+          "mean": 0.7535,
+          "25th": 0.6688,
+          "75th": 0.858,
+          "min": 0.426,
+          "min_ind": 81,
+          "max": 0.994,
+          "max_ind": 30
+        },
+        "jaccard_score": {
+          "mean": 0.1355,
+          "25th": 0.0767,
+          "75th": 0.1773,
+          "min": 0.0026,
+          "min_ind": 30,
+          "max": 0.3836,
+          "max_ind": 55
+        },
+        "accuracy_score": {
+          "mean": 0.2465,
+          "25th": 0.142,
+          "75th": 0.3313,
+          "min": 0.006,
+          "min_ind": 30,
+          "max": 0.574,
+          "max_ind": 81
+        },
+        "recall_score": {
+          "mean": 0.2465,
+          "25th": 0.1427,
+          "75th": 0.3299,
+          "min": 0.006,
+          "min_ind": 30,
+          "max": 0.5745,
+          "max_ind": 81
+        },
+        "precision_score": {
+          "mean": 0.1795,
+          "25th": 0.1032,
+          "75th": 0.2273,
+          "min": 0.0047,
+          "min_ind": 30,
+          "max": 0.5232,
+          "max_ind": 55
+        }
+      },
+      "found_clusters": {
+        "mean": 3.0,
+        "25th": 3.0,
+        "75th": 3.0,
+        "min": 3,
+        "min_ind": 0,
+        "max": 3,
+        "max_ind": 0
+      },
+      "expected_clusters": {
+        "mean": 4.0,
+        "25th": 4.0,
+        "75th": 4.0,
+        "min": 4,
+        "min_ind": 0,
+        "max": 4,
+        "max_ind": 0
+      },
+      "time": {
+        "mean": 0.1548,
+        "25th": 0.122,
+        "75th": 0.1737,
+        "min": 0.097,
+        "min_ind": 57,
+        "max": 0.3326,
+        "max_ind": 89
+      }
+    },
+    "dbscan": {
+      "clustering": {
+        "adjusted_mutual_info_score": {
+          "mean": 0.0088,
+          "25th": -0.0,
+          "75th": 0.0113,
+          "min": -0.0003,
+          "min_ind": 88,
+          "max": 0.0945,
+          "max_ind": 57
+        },
+        "adjusted_rand_score": {
+          "mean": 0.0002,
+          "25th": 0.0,
+          "75th": 0.0002,
+          "min": -0.0,
+          "min_ind": 11,
+          "max": 0.0068,
+          "max_ind": 57
+        },
+        "completeness_score": {
+          "mean": 0.5587,
+          "25th": 0.2212,
+          "75th": 1.0,
+          "min": 0.0528,
+          "min_ind": 88,
+          "max": 1.0,
+          "max_ind": 0
+        },
+        "fowlkes_mallows_score": {
+          "mean": 0.4962,
+          "25th": 0.4957,
+          "75th": 0.4993,
+          "min": 0.4704,
+          "min_ind": 57,
+          "max": 0.4993,
+          "max_ind": 18
+        },
+        "homogeneity_score": {
+          "mean": 0.0061,
+          "25th": 0.0,
+          "75th": 0.0072,
+          "min": 0.0,
+          "min_ind": 0,
+          "max": 0.0711,
+          "max_ind": 57
+        },
+        "v_measure_score": {
+          "mean": 0.0113,
+          "25th": 0.0,
+          "75th": 0.014,
+          "min": 0.0,
+          "min_ind": 0,
+          "max": 0.111,
+          "max_ind": 57
+        }
+      },
+      "classification": {
+        "f1_score": {
+          "mean": 0.0104,
+          "25th": 0.0,
+          "75th": 0.0051,
+          "min": 0.0,
+          "min_ind": 0,
+          "max": 0.1275,
+          "max_ind": 92
+        },
+        "hamming_loss": {
+          "mean": 0.9804,
+          "25th": 0.9968,
+          "75th": 1.0,
+          "min": 0.735,
+          "min_ind": 92,
+          "max": 1.0,
+          "max_ind": 0
+        },
+        "jaccard_score": {
+          "mean": 0.0062,
+          "25th": 0.0,
+          "75th": 0.0026,
+          "min": 0.0,
+          "min_ind": 0,
+          "max": 0.0773,
+          "max_ind": 92
+        },
+        "accuracy_score": {
+          "mean": 0.0196,
+          "25th": 0.0,
+          "75th": 0.0032,
+          "min": 0.0,
+          "min_ind": 0,
+          "max": 0.265,
+          "max_ind": 92
+        },
+        "recall_score": {
+          "mean": 0.0192,
+          "25th": 0.0,
+          "75th": 0.0026,
+          "min": 0.0,
+          "min_ind": 0,
+          "max": 0.2631,
+          "max_ind": 92
+        },
+        "precision_score": {
+          "mean": 0.0686,
+          "25th": 0.0,
+          "75th": 0.12,
+          "min": 0.0,
+          "min_ind": 0,
+          "max": 0.5638,
+          "max_ind": 95
+        }
+      },
+      "found_clusters": {
+        "mean": 2.05,
+        "25th": 1.0,
+        "75th": 2.0,
+        "min": 1,
+        "min_ind": 0,
+        "max": 10,
+        "max_ind": 57
+      },
+      "expected_clusters": {
+        "mean": 4.0,
+        "25th": 4.0,
+        "75th": 4.0,
+        "min": 4,
+        "min_ind": 0,
+        "max": 4,
+        "max_ind": 0
+      },
+      "time": {
+        "mean": 0.0136,
+        "25th": 0.012,
+        "75th": 0.015,
+        "min": 0.009,
+        "min_ind": 25,
+        "max": 0.021,
+        "max_ind": 79
+      }
+    },
+    "k_means": {
+      "clustering": {
+        "adjusted_mutual_info_score": {
+          "mean": 0.3895,
+          "25th": 0.3408,
+          "75th": 0.4414,
+          "min": 0.2273,
+          "min_ind": 87,
+          "max": 0.5652,
+          "max_ind": 32
+        },
+        "adjusted_rand_score": {
+          "mean": 0.3416,
+          "25th": 0.2745,
+          "75th": 0.3933,
+          "min": 0.18,
+          "min_ind": 87,
+          "max": 0.5637,
+          "max_ind": 83
+        },
+        "completeness_score": {
+          "mean": 0.3952,
+          "25th": 0.3448,
+          "75th": 0.4471,
+          "min": 0.2308,
+          "min_ind": 87,
+          "max": 0.5734,
+          "max_ind": 32
+        },
+        "fowlkes_mallows_score": {
+          "mean": 0.5099,
+          "25th": 0.4608,
+          "75th": 0.548,
+          "min": 0.3866,
+          "min_ind": 87,
+          "max": 0.6739,
+          "max_ind": 32
+        },
+        "homogeneity_score": {
+          "mean": 0.388,
+          "25th": 0.3367,
+          "75th": 0.4385,
+          "min": 0.229,
+          "min_ind": 87,
+          "max": 0.5601,
+          "max_ind": 32
+        },
+        "v_measure_score": {
+          "mean": 0.3915,
+          "25th": 0.343,
+          "75th": 0.4433,
+          "min": 0.2299,
+          "min_ind": 87,
+          "max": 0.5667,
+          "max_ind": 32
+        }
+      },
+      "classification": {
+        "f1_score": {
+          "mean": 0.635,
+          "25th": 0.5787,
+          "75th": 0.6987,
+          "min": 0.4518,
+          "min_ind": 42,
+          "max": 0.8064,
+          "max_ind": 83
+        },
+        "hamming_loss": {
+          "mean": 0.3654,
+          "25th": 0.3015,
+          "75th": 0.4212,
+          "min": 0.193,
+          "min_ind": 83,
+          "max": 0.546,
+          "max_ind": 6
+        },
+        "jaccard_score": {
+          "mean": 0.4789,
+          "25th": 0.4233,
+          "75th": 0.5471,
+          "min": 0.3059,
+          "min_ind": 42,
+          "max": 0.6761,
+          "max_ind": 83
+        },
+        "accuracy_score": {
+          "mean": 0.6346,
+          "25th": 0.5788,
+          "75th": 0.6985,
+          "min": 0.454,
+          "min_ind": 6,
+          "max": 0.807,
+          "max_ind": 83
+        },
+        "recall_score": {
+          "mean": 0.6345,
+          "25th": 0.5785,
+          "75th": 0.6984,
+          "min": 0.453,
+          "min_ind": 6,
+          "max": 0.8072,
+          "max_ind": 83
+        },
+        "precision_score": {
+          "mean": 0.6517,
+          "25th": 0.588,
+          "75th": 0.7144,
+          "min": 0.4618,
+          "min_ind": 42,
+          "max": 0.8297,
+          "max_ind": 32
+        }
+      },
+      "found_clusters": {
+        "mean": 4.0,
+        "25th": 4.0,
+        "75th": 4.0,
+        "min": 4,
+        "min_ind": 0,
+        "max": 4,
+        "max_ind": 0
+      },
+      "expected_clusters": {
+        "mean": 4.0,
+        "25th": 4.0,
+        "75th": 4.0,
+        "min": 4,
+        "min_ind": 0,
+        "max": 4,
+        "max_ind": 0
+      },
+      "time": {
+        "mean": 0.1922,
+        "25th": 0.087,
+        "75th": 0.1805,
+        "min": 0.057,
+        "min_ind": 16,
+        "max": 1.5476,
+        "max_ind": 89
+      }
+    },
+    "mini_batch_k_means": {
+      "clustering": {
+        "adjusted_mutual_info_score": {
+          "mean": 0.3679,
+          "25th": 0.3108,
+          "75th": 0.4189,
+          "min": 0.1752,
+          "min_ind": 68,
+          "max": 0.5718,
+          "max_ind": 5
+        },
+        "adjusted_rand_score": {
+          "mean": 0.3206,
+          "25th": 0.2509,
+          "75th": 0.3792,
+          "min": 0.1717,
+          "min_ind": 68,
+          "max": 0.5332,
+          "max_ind": 5
+        },
+        "completeness_score": {
+          "mean": 0.3749,
+          "25th": 0.3159,
+          "75th": 0.4292,
+          "min": 0.179,
+          "min_ind": 68,
+          "max": 0.5763,
+          "max_ind": 5
+        },
+        "fowlkes_mallows_score": {
+          "mean": 0.4959,
+          "25th": 0.4464,
+          "75th": 0.5374,
+          "min": 0.3813,
+          "min_ind": 68,
+          "max": 0.6513,
+          "max_ind": 5
+        },
+        "homogeneity_score": {
+          "mean": 0.3653,
+          "25th": 0.3091,
+          "75th": 0.417,
+          "min": 0.1769,
+          "min_ind": 68,
+          "max": 0.5702,
+          "max_ind": 5
+        },
+        "v_measure_score": {
+          "mean": 0.37,
+          "25th": 0.3131,
+          "75th": 0.4208,
+          "min": 0.1779,
+          "min_ind": 68,
+          "max": 0.5732,
+          "max_ind": 5
+        }
+      },
+      "classification": {
+        "f1_score": {
+          "mean": 0.6093,
+          "25th": 0.5374,
+          "75th": 0.6753,
+          "min": 0.4373,
+          "min_ind": 48,
+          "max": 0.7788,
+          "max_ind": 54
+        },
+        "hamming_loss": {
+          "mean": 0.388,
+          "25th": 0.3228,
+          "75th": 0.4632,
+          "min": 0.221,
+          "min_ind": 54,
+          "max": 0.556,
+          "max_ind": 42
+        },
+        "jaccard_score": {
+          "mean": 0.4536,
+          "25th": 0.375,
+          "75th": 0.5195,
+          "min": 0.2975,
+          "min_ind": 42,
+          "max": 0.6379,
+          "max_ind": 54
+        },
+        "accuracy_score": {
+          "mean": 0.612,
+          "25th": 0.5368,
+          "75th": 0.6772,
+          "min": 0.444,
+          "min_ind": 42,
+          "max": 0.779,
+          "max_ind": 54
+        },
+        "recall_score": {
+          "mean": 0.6121,
+          "25th": 0.5368,
+          "75th": 0.6772,
+          "min": 0.4443,
+          "min_ind": 42,
+          "max": 0.7791,
+          "max_ind": 54
+        },
+        "precision_score": {
+          "mean": 0.629,
+          "25th": 0.5506,
+          "75th": 0.7099,
+          "min": 0.4446,
+          "min_ind": 18,
+          "max": 0.8073,
+          "max_ind": 57
+        }
+      },
+      "found_clusters": {
+        "mean": 4.0,
+        "25th": 4.0,
+        "75th": 4.0,
+        "min": 4,
+        "min_ind": 0,
+        "max": 4,
+        "max_ind": 0
+      },
+      "expected_clusters": {
+        "mean": 4.0,
+        "25th": 4.0,
+        "75th": 4.0,
+        "min": 4,
+        "min_ind": 0,
+        "max": 4,
+        "max_ind": 0
+      },
+      "time": {
+        "mean": 0.0619,
+        "25th": 0.041,
+        "75th": 0.0715,
+        "min": 0.028,
+        "min_ind": 6,
+        "max": 0.2766,
+        "max_ind": 0
+      }
+    },
+    "mean_shift": {
+      "clustering": {
+        "adjusted_mutual_info_score": {
+          "mean": 0.0013,
+          "25th": -0.0,
+          "75th": 0.0,
+          "min": -0.0,
+          "min_ind": 5,
+          "max": 0.0399,
+          "max_ind": 39
+        },
+        "adjusted_rand_score": {
+          "mean": 0.0,
+          "25th": 0.0,
+          "75th": 0.0,
+          "min": -0.0,
+          "min_ind": 48,
+          "max": 0.0019,
+          "max_ind": 39
+        },
+        "completeness_score": {
+          "mean": 0.8924,
+          "25th": 1.0,
+          "75th": 1.0,
+          "min": 0.0614,
+          "min_ind": 48,
+          "max": 1.0,
+          "max_ind": 0
+        },
+        "fowlkes_mallows_score": {
+          "mean": 0.4987,
+          "25th": 0.4993,
+          "75th": 0.4993,
+          "min": 0.4898,
+          "min_ind": 39,
+          "max": 0.4993,
+          "max_ind": 6
+        },
+        "homogeneity_score": {
+          "mean": 0.0009,
+          "25th": 0.0,
+          "75th": 0.0,
+          "min": 0.0,
+          "min_ind": 0,
+          "max": 0.0225,
+          "max_ind": 39
+        },
+        "v_measure_score": {
+          "mean": 0.0016,
+          "25th": 0.0,
+          "75th": 0.0,
+          "min": 0.0,
+          "min_ind": 0,
+          "max": 0.0419,
+          "max_ind": 39
+        }
+      },
+      "classification": {
+        "f1_score": {
+          "mean": 0.1005,
+          "25th": 0.0997,
+          "75th": 0.1006,
+          "min": 0.0965,
+          "min_ind": 86,
+          "max": 0.1125,
+          "max_ind": 12
+        },
+        "hamming_loss": {
+          "mean": 0.7499,
+          "25th": 0.748,
+          "75th": 0.751,
+          "min": 0.743,
+          "min_ind": 12,
+          "max": 0.761,
+          "max_ind": 86
+        },
+        "jaccard_score": {
+          "mean": 0.0627,
+          "25th": 0.0622,
+          "75th": 0.063,
+          "min": 0.0598,
+          "min_ind": 86,
+          "max": 0.0691,
+          "max_ind": 12
+        },
+        "accuracy_score": {
+          "mean": 0.2501,
+          "25th": 0.249,
+          "75th": 0.252,
+          "min": 0.239,
+          "min_ind": 86,
+          "max": 0.257,
+          "max_ind": 12
+        },
+        "recall_score": {
+          "mean": 0.2499,
+          "25th": 0.25,
+          "75th": 0.25,
+          "min": 0.2371,
+          "min_ind": 86,
+          "max": 0.256,
+          "max_ind": 12
+        },
+        "precision_score": {
+          "mean": 0.0714,
+          "25th": 0.0622,
+          "75th": 0.063,
+          "min": 0.0606,
+          "min_ind": 86,
+          "max": 0.3131,
+          "max_ind": 12
+        }
+      },
+      "found_clusters": {
+        "mean": 1.13,
+        "25th": 1.0,
+        "75th": 1.0,
+        "min": 1,
+        "min_ind": 0,
+        "max": 2,
+        "max_ind": 12
+      },
+      "expected_clusters": {
+        "mean": 4.0,
+        "25th": 4.0,
+        "75th": 4.0,
+        "min": 4,
+        "min_ind": 0,
+        "max": 4,
+        "max_ind": 0
+      },
+      "time": {
+        "mean": 9.6608,
+        "25th": 7.1691,
+        "75th": 11.5944,
+        "min": 5.7045,
+        "min_ind": 81,
+        "max": 20.0229,
+        "max_ind": 63
+      }
+    },
+    "optics": {
+      "clustering": {
+        "adjusted_mutual_info_score": {
+          "mean": 0.1286,
+          "25th": 0.1084,
+          "75th": 0.149,
+          "min": 0.0752,
+          "min_ind": 63,
+          "max": 0.1882,
+          "max_ind": 39
+        },
+        "adjusted_rand_score": {
+          "mean": 0.004,
+          "25th": 0.0021,
+          "75th": 0.0049,
+          "min": 0.0006,
+          "min_ind": 75,
+          "max": 0.0126,
+          "max_ind": 39
+        },
+        "completeness_score": {
+          "mean": 0.2136,
+          "25th": 0.206,
+          "75th": 0.2252,
+          "min": 0.163,
+          "min_ind": 75,
+          "max": 0.2416,
+          "max_ind": 21
+        },
+        "fowlkes_mallows_score": {
+          "mean": 0.4331,
+          "25th": 0.4215,
+          "75th": 0.4464,
+          "min": 0.3943,
+          "min_ind": 14,
+          "max": 0.4607,
+          "max_ind": 8
+        },
+        "homogeneity_score": {
+          "mean": 0.1241,
+          "25th": 0.0989,
+          "75th": 0.1473,
+          "min": 0.0668,
+          "min_ind": 63,
+          "max": 0.203,
+          "max_ind": 14
+        },
+        "v_measure_score": {
+          "mean": 0.1552,
+          "25th": 0.1336,
+          "75th": 0.1787,
+          "min": 0.0983,
+          "min_ind": 93,
+          "max": 0.217,
+          "max_ind": 39
+        }
+      },
+      "classification": {
+        "f1_score": {
+          "mean": 0.0033,
+          "25th": 0.002,
+          "75th": 0.0046,
+          "min": 0.0,
+          "min_ind": 21,
+          "max": 0.0132,
+          "max_ind": 85
+        },
+        "hamming_loss": {
+          "mean": 0.9917,
+          "25th": 0.989,
+          "75th": 0.995,
+          "min": 0.97,
+          "min_ind": 39,
+          "max": 1.0,
+          "max_ind": 21
+        },
+        "jaccard_score": {
+          "mean": 0.0017,
+          "25th": 0.001,
+          "75th": 0.0023,
+          "min": 0.0,
+          "min_ind": 21,
+          "max": 0.0071,
+          "max_ind": 85
+        },
+        "accuracy_score": {
+          "mean": 0.0083,
+          "25th": 0.005,
+          "75th": 0.011,
+          "min": 0.0,
+          "min_ind": 21,
+          "max": 0.03,
+          "max_ind": 39
+        },
+        "recall_score": {
+          "mean": 0.0017,
+          "25th": 0.001,
+          "75th": 0.0024,
+          "min": 0.0,
+          "min_ind": 21,
+          "max": 0.0072,
+          "max_ind": 85
+        },
+        "precision_score": {
+          "mean": 0.0551,
+          "25th": 0.037,
+          "75th": 0.0679,
+          "min": 0.0,
+          "min_ind": 21,
+          "max": 0.1381,
+          "max_ind": 7
+        }
+      },
+      "found_clusters": {
+        "mean": 19.81,
+        "25th": 17.0,
+        "75th": 22.25,
+        "min": 12,
+        "min_ind": 7,
+        "max": 32,
+        "max_ind": 61
+      },
+      "expected_clusters": {
+        "mean": 4.0,
+        "25th": 4.0,
+        "75th": 4.0,
+        "min": 4,
+        "min_ind": 0,
+        "max": 4,
+        "max_ind": 0
+      },
+      "time": {
+        "mean": 1.3997,
+        "25th": 1.0465,
+        "75th": 1.6048,
+        "min": 0.7553,
+        "min_ind": 17,
+        "max": 3.5145,
+        "max_ind": 76
+      }
+    },
+    "spectral_clustering": {
+      "clustering": {
+        "adjusted_mutual_info_score": {
+          "mean": 0.4314,
+          "25th": 0.3279,
+          "75th": 0.5619,
+          "min": 0.0029,
+          "min_ind": 97,
+          "max": 0.7609,
+          "max_ind": 69
+        },
+        "adjusted_rand_score": {
+          "mean": 0.3464,
+          "25th": 0.22,
+          "75th": 0.5049,
+          "min": -0.0,
+          "min_ind": 97,
+          "max": 0.7057,
+          "max_ind": 10
+        },
+        "completeness_score": {
+          "mean": 0.531,
+          "25th": 0.4477,
+          "75th": 0.6424,
+          "min": 0.1881,
+          "min_ind": 97,
+          "max": 0.8843,
+          "max_ind": 69
+        },
+        "fowlkes_mallows_score": {
+          "mean": 0.5852,
+          "25th": 0.5023,
+          "75th": 0.6559,
+          "min": 0.4297,
+          "min_ind": 75,
+          "max": 0.7802,
+          "max_ind": 10
+        },
+        "homogeneity_score": {
+          "mean": 0.3846,
+          "25th": 0.2684,
+          "75th": 0.5288,
+          "min": 0.005,
+          "min_ind": 97,
+          "max": 0.7063,
+          "max_ind": 21
+        },
+        "v_measure_score": {
+          "mean": 0.434,
+          "25th": 0.331,
+          "75th": 0.5634,
+          "min": 0.0097,
+          "min_ind": 97,
+          "max": 0.7619,
+          "max_ind": 69
+        }
+      },
+      "classification": {
+        "f1_score": {
+          "mean": 0.523,
+          "25th": 0.3982,
+          "75th": 0.645,
+          "min": 0.1054,
+          "min_ind": 96,
+          "max": 0.8761,
+          "max_ind": 54
+        },
+        "hamming_loss": {
+          "mean": 0.4109,
+          "25th": 0.2968,
+          "75th": 0.5155,
+          "min": 0.123,
+          "min_ind": 10,
+          "max": 0.746,
+          "max_ind": 8
+        },
+        "jaccard_score": {
+          "mean": 0.418,
+          "25th": 0.2824,
+          "75th": 0.5417,
+          "min": 0.0656,
+          "min_ind": 96,
+          "max": 0.7837,
+          "max_ind": 10
+        },
+        "accuracy_score": {
+          "mean": 0.5891,
+          "25th": 0.4845,
+          "75th": 0.7032,
+          "min": 0.254,
+          "min_ind": 8,
+          "max": 0.877,
+          "max_ind": 10
+        },
+        "recall_score": {
+          "mean": 0.5891,
+          "25th": 0.4853,
+          "75th": 0.7037,
+          "min": 0.252,
+          "min_ind": 52,
+          "max": 0.8773,
+          "max_ind": 10
+        },
+        "precision_score": {
+          "mean": 0.6296,
+          "25th": 0.5311,
+          "75th": 0.794,
+          "min": 0.2466,
+          "min_ind": 48,
+          "max": 0.8907,
+          "max_ind": 10
+        }
+      },
+      "found_clusters": {
+        "mean": 4.0,
+        "25th": 4.0,
+        "75th": 4.0,
+        "min": 4,
+        "min_ind": 0,
+        "max": 4,
+        "max_ind": 0
+      },
+      "expected_clusters": {
+        "mean": 4.0,
+        "25th": 4.0,
+        "75th": 4.0,
+        "min": 4,
+        "min_ind": 0,
+        "max": 4,
+        "max_ind": 0
+      },
+      "time": {
+        "mean": 1.9122,
+        "25th": 0.8136,
+        "75th": 2.4961,
+        "min": 0.293,
+        "min_ind": 56,
+        "max": 7.242,
+        "max_ind": 4
+      }
+    },
+    "gaussian_mixture_model": {
+      "clustering": {
+        "adjusted_mutual_info_score": {
+          "mean": 0.8514,
+          "25th": 0.8132,
+          "75th": 0.9032,
+          "min": 0.622,
+          "min_ind": 68,
+          "max": 0.9484,
+          "max_ind": 14
+        },
+        "adjusted_rand_score": {
+          "mean": 0.8848,
+          "25th": 0.8543,
+          "75th": 0.9319,
+          "min": 0.6167,
+          "min_ind": 19,
+          "max": 0.9683,
+          "max_ind": 14
+        },
+        "completeness_score": {
+          "mean": 0.8521,
+          "25th": 0.8139,
+          "75th": 0.9035,
+          "min": 0.625,
+          "min_ind": 68,
+          "max": 0.9486,
+          "max_ind": 14
+        },
+        "fowlkes_mallows_score": {
+          "mean": 0.9136,
+          "25th": 0.8906,
+          "75th": 0.9489,
+          "min": 0.7131,
+          "min_ind": 19,
+          "max": 0.9762,
+          "max_ind": 14
+        },
+        "homogeneity_score": {
+          "mean": 0.8517,
+          "25th": 0.8138,
+          "75th": 0.9035,
+          "min": 0.6215,
+          "min_ind": 68,
+          "max": 0.9486,
+          "max_ind": 14
+        },
+        "v_measure_score": {
+          "mean": 0.8519,
+          "25th": 0.8139,
+          "75th": 0.9035,
+          "min": 0.6232,
+          "min_ind": 68,
+          "max": 0.9486,
+          "max_ind": 14
+        }
+      },
+      "classification": {
+        "f1_score": {
+          "mean": 0.9521,
+          "25th": 0.9427,
+          "75th": 0.974,
+          "min": 0.7276,
+          "min_ind": 6,
+          "max": 0.988,
+          "max_ind": 74
+        },
+        "hamming_loss": {
+          "mean": 0.0477,
+          "25th": 0.026,
+          "75th": 0.0572,
+          "min": 0.012,
+          "min_ind": 14,
+          "max": 0.264,
+          "max_ind": 19
+        },
+        "jaccard_score": {
+          "mean": 0.9129,
+          "25th": 0.8922,
+          "75th": 0.9494,
+          "min": 0.6355,
+          "min_ind": 6,
+          "max": 0.9763,
+          "max_ind": 14
+        },
+        "accuracy_score": {
+          "mean": 0.9523,
+          "25th": 0.9428,
+          "75th": 0.974,
+          "min": 0.736,
+          "min_ind": 19,
+          "max": 0.988,
+          "max_ind": 14
+        },
+        "recall_score": {
+          "mean": 0.9523,
+          "25th": 0.9429,
+          "75th": 0.9741,
+          "min": 0.7329,
+          "min_ind": 6,
+          "max": 0.988,
+          "max_ind": 74
+        },
+        "precision_score": {
+          "mean": 0.9525,
+          "25th": 0.9426,
+          "75th": 0.9741,
+          "min": 0.7332,
+          "min_ind": 6,
+          "max": 0.988,
+          "max_ind": 74
+        }
+      },
+      "found_clusters": {
+        "mean": 4.0,
+        "25th": 4.0,
+        "75th": 4.0,
+        "min": 4,
+        "min_ind": 0,
+        "max": 4,
+        "max_ind": 0
+      },
+      "expected_clusters": {
+        "mean": 4.0,
+        "25th": 4.0,
+        "75th": 4.0,
+        "min": 4,
+        "min_ind": 0,
+        "max": 4,
+        "max_ind": 0
+      },
+      "time": {
+        "mean": 0.0403,
+        "25th": 0.0278,
+        "75th": 0.0448,
+        "min": 0.019,
+        "min_ind": 5,
+        "max": 0.2146,
+        "max_ind": 63
+      }
+    }
+  },
+  "classification_alg": {
+    "KNeighborsClassifier": {
+      "clustering": {
+        "adjusted_mutual_info_score": {
+          "mean": 0.7218,
+          "25th": 0.6699,
+          "75th": 0.7888,
+          "min": 0.5101,
+          "min_ind": 12,
+          "max": 0.8844,
+          "max_ind": 10
+        },
+        "adjusted_rand_score": {
+          "mean": 0.749,
+          "25th": 0.6962,
+          "75th": 0.814,
+          "min": 0.5174,
+          "min_ind": 12,
+          "max": 0.9089,
+          "max_ind": 10
+        },
+        "completeness_score": {
+          "mean": 0.7271,
+          "25th": 0.6746,
+          "75th": 0.794,
+          "min": 0.5215,
+          "min_ind": 12,
+          "max": 0.8856,
+          "max_ind": 10
+        },
+        "fowlkes_mallows_score": {
+          "mean": 0.8117,
+          "25th": 0.7735,
+          "75th": 0.8603,
+          "min": 0.6386,
+          "min_ind": 12,
+          "max": 0.9314,
+          "max_ind": 10
+        },
+        "homogeneity_score": {
+          "mean": 0.7258,
+          "25th": 0.6763,
+          "75th": 0.7915,
+          "min": 0.5151,
+          "min_ind": 12,
+          "max": 0.8869,
+          "max_ind": 10
+        },
+        "v_measure_score": {
+          "mean": 0.7264,
+          "25th": 0.6754,
+          "75th": 0.7923,
+          "min": 0.5183,
+          "min_ind": 12,
+          "max": 0.8863,
+          "max_ind": 10
+        }
+      },
+      "classification": {
+        "f1_score": {
+          "mean": 0.8947,
+          "25th": 0.8718,
+          "75th": 0.9251,
+          "min": 0.7688,
+          "min_ind": 12,
+          "max": 0.9643,
+          "max_ind": 10
+        },
+        "hamming_loss": {
+          "mean": 0.1039,
+          "25th": 0.075,
+          "75th": 0.125,
+          "min": 0.035,
+          "min_ind": 10,
+          "max": 0.225,
+          "max_ind": 12
+        },
+        "jaccard_score": {
+          "mean": 0.8143,
+          "25th": 0.7744,
+          "75th": 0.8626,
+          "min": 0.6333,
+          "min_ind": 12,
+          "max": 0.9313,
+          "max_ind": 10
+        },
+        "accuracy_score": {
+          "mean": 0.8961,
+          "25th": 0.875,
+          "75th": 0.925,
+          "min": 0.775,
+          "min_ind": 12,
+          "max": 0.965,
+          "max_ind": 10
+        },
+        "recall_score": {
+          "mean": 0.8961,
+          "25th": 0.8707,
+          "75th": 0.9281,
+          "min": 0.7709,
+          "min_ind": 12,
+          "max": 0.9662,
+          "max_ind": 10
+        },
+        "precision_score": {
+          "mean": 0.8973,
+          "25th": 0.8747,
+          "75th": 0.925,
+          "min": 0.7785,
+          "min_ind": 12,
+          "max": 0.9645,
+          "max_ind": 10
+        }
+      },
+      "time": {
+        "mean": 0.0123,
+        "25th": 0.01,
+        "75th": 0.013,
+        "min": 0.008,
+        "min_ind": 17,
+        "max": 0.03,
+        "max_ind": 63
+      }
+    },
+    "DecisionTreeClassifier": {
+      "clustering": {
+        "adjusted_mutual_info_score": {
+          "mean": 0.5267,
+          "25th": 0.4538,
+          "75th": 0.5873,
+          "min": 0.3735,
+          "min_ind": 96,
+          "max": 0.704,
+          "max_ind": 69
+        },
+        "adjusted_rand_score": {
+          "mean": 0.5575,
+          "25th": 0.4807,
+          "75th": 0.6288,
+          "min": 0.3885,
+          "min_ind": 68,
+          "max": 0.7204,
+          "max_ind": 10
+        },
+        "completeness_score": {
+          "mean": 0.5349,
+          "25th": 0.4641,
+          "75th": 0.5949,
+          "min": 0.384,
+          "min_ind": 96,
+          "max": 0.7083,
+          "max_ind": 69
+        },
+        "fowlkes_mallows_score": {
+          "mean": 0.6679,
+          "25th": 0.6104,
+          "75th": 0.7215,
+          "min": 0.5431,
+          "min_ind": 34,
+          "max": 0.7899,
+          "max_ind": 10
+        },
+        "homogeneity_score": {
+          "mean": 0.5343,
+          "25th": 0.4619,
+          "75th": 0.5944,
+          "min": 0.3838,
+          "min_ind": 96,
+          "max": 0.7095,
+          "max_ind": 69
+        },
+        "v_measure_score": {
+          "mean": 0.5346,
+          "25th": 0.4629,
+          "75th": 0.5941,
+          "min": 0.3839,
+          "min_ind": 96,
+          "max": 0.7089,
+          "max_ind": 69
+        }
+      },
+      "classification": {
+        "f1_score": {
+          "mean": 0.8034,
+          "25th": 0.7659,
+          "75th": 0.8431,
+          "min": 0.6975,
+          "min_ind": 68,
+          "max": 0.8885,
+          "max_ind": 69
+        },
+        "hamming_loss": {
+          "mean": 0.195,
+          "25th": 0.155,
+          "75th": 0.2312,
+          "min": 0.115,
+          "min_ind": 10,
+          "max": 0.295,
+          "max_ind": 68
+        },
+        "jaccard_score": {
+          "mean": 0.6774,
+          "25th": 0.6219,
+          "75th": 0.7313,
+          "min": 0.5382,
+          "min_ind": 68,
+          "max": 0.8035,
+          "max_ind": 69
+        },
+        "accuracy_score": {
+          "mean": 0.805,
+          "25th": 0.7688,
+          "75th": 0.845,
+          "min": 0.705,
+          "min_ind": 68,
+          "max": 0.885,
+          "max_ind": 10
+        },
+        "recall_score": {
+          "mean": 0.8048,
+          "25th": 0.7671,
+          "75th": 0.8431,
+          "min": 0.7044,
+          "min_ind": 48,
+          "max": 0.892,
+          "max_ind": 69
+        },
+        "precision_score": {
+          "mean": 0.8061,
+          "25th": 0.7691,
+          "75th": 0.845,
+          "min": 0.6956,
+          "min_ind": 68,
+          "max": 0.8868,
+          "max_ind": 69
+        }
+      },
+      "time": {
+        "mean": 0.0045,
+        "25th": 0.004,
+        "75th": 0.005,
+        "min": 0.003,
+        "min_ind": 1,
+        "max": 0.011,
+        "max_ind": 35
+      }
+    },
+    "RandomForestClassifier": {
+      "clustering": {
+        "adjusted_mutual_info_score": {
+          "mean": 0.691,
+          "25th": 0.642,
+          "75th": 0.7522,
+          "min": 0.5027,
+          "min_ind": 68,
+          "max": 0.862,
+          "max_ind": 10
+        },
+        "adjusted_rand_score": {
+          "mean": 0.723,
+          "25th": 0.6617,
+          "75th": 0.7871,
+          "min": 0.5135,
+          "min_ind": 0,
+          "max": 0.8889,
+          "max_ind": 10
+        },
+        "completeness_score": {
+          "mean": 0.6964,
+          "25th": 0.648,
+          "75th": 0.7567,
+          "min": 0.5122,
+          "min_ind": 68,
+          "max": 0.864,
+          "max_ind": 10
+        },
+        "fowlkes_mallows_score": {
+          "mean": 0.7922,
+          "25th": 0.7462,
+          "75th": 0.8397,
+          "min": 0.6343,
+          "min_ind": 0,
+          "max": 0.9164,
+          "max_ind": 10
+        },
+        "homogeneity_score": {
+          "mean": 0.6958,
+          "25th": 0.6476,
+          "75th": 0.7559,
+          "min": 0.5101,
+          "min_ind": 68,
+          "max": 0.8645,
+          "max_ind": 10
+        },
+        "v_measure_score": {
+          "mean": 0.6961,
+          "25th": 0.648,
+          "75th": 0.7563,
+          "min": 0.5112,
+          "min_ind": 68,
+          "max": 0.8643,
+          "max_ind": 10
+        }
+      },
+      "classification": {
+        "f1_score": {
+          "mean": 0.8837,
+          "25th": 0.8549,
+          "75th": 0.9119,
+          "min": 0.7826,
+          "min_ind": 68,
+          "max": 0.9529,
+          "max_ind": 10
+        },
+        "hamming_loss": {
+          "mean": 0.1151,
+          "25th": 0.085,
+          "75th": 0.145,
+          "min": 0.045,
+          "min_ind": 10,
+          "max": 0.215,
+          "max_ind": 0
+        },
+        "jaccard_score": {
+          "mean": 0.7961,
+          "25th": 0.7484,
+          "75th": 0.8414,
+          "min": 0.6455,
+          "min_ind": 68,
+          "max": 0.9113,
+          "max_ind": 10
+        },
+        "accuracy_score": {
+          "mean": 0.8849,
+          "25th": 0.855,
+          "75th": 0.915,
+          "min": 0.785,
+          "min_ind": 0,
+          "max": 0.955,
+          "max_ind": 10
+        },
+        "recall_score": {
+          "mean": 0.8847,
+          "25th": 0.8561,
+          "75th": 0.912,
+          "min": 0.7877,
+          "min_ind": 68,
+          "max": 0.9538,
+          "max_ind": 10
+        },
+        "precision_score": {
+          "mean": 0.8856,
+          "25th": 0.8587,
+          "75th": 0.9144,
+          "min": 0.7861,
+          "min_ind": 68,
+          "max": 0.9544,
+          "max_ind": 83
+        }
+      },
+      "time": {
+        "mean": 0.3594,
+        "25th": 0.3024,
+        "75th": 0.3994,
+        "min": 0.2296,
+        "min_ind": 89,
+        "max": 0.7674,
+        "max_ind": 2
+      }
+    },
+    "LinearSVC": {
+      "clustering": {
+        "adjusted_mutual_info_score": {
+          "mean": 0.5638,
+          "25th": 0.4837,
+          "75th": 0.632,
+          "min": 0.3582,
+          "min_ind": 0,
+          "max": 0.7545,
+          "max_ind": 30
+        },
+        "adjusted_rand_score": {
+          "mean": 0.5773,
+          "25th": 0.497,
+          "75th": 0.6553,
+          "min": 0.3527,
+          "min_ind": 26,
+          "max": 0.7751,
+          "max_ind": 30
+        },
+        "completeness_score": {
+          "mean": 0.5721,
+          "25th": 0.4948,
+          "75th": 0.6409,
+          "min": 0.3711,
+          "min_ind": 0,
+          "max": 0.7583,
+          "max_ind": 39
+        },
+        "fowlkes_mallows_score": {
+          "mean": 0.6832,
+          "25th": 0.6235,
+          "75th": 0.7412,
+          "min": 0.514,
+          "min_ind": 26,
+          "max": 0.8319,
+          "max_ind": 30
+        },
+        "homogeneity_score": {
+          "mean": 0.5701,
+          "25th": 0.4912,
+          "75th": 0.6361,
+          "min": 0.3668,
+          "min_ind": 0,
+          "max": 0.7597,
+          "max_ind": 30
+        },
+        "v_measure_score": {
+          "mean": 0.5711,
+          "25th": 0.4923,
+          "75th": 0.6382,
+          "min": 0.3689,
+          "min_ind": 0,
+          "max": 0.7587,
+          "max_ind": 30
+        }
+      },
+      "classification": {
+        "f1_score": {
+          "mean": 0.8073,
+          "25th": 0.7663,
+          "75th": 0.8443,
+          "min": 0.6893,
+          "min_ind": 34,
+          "max": 0.9105,
+          "max_ind": 30
+        },
+        "hamming_loss": {
+          "mean": 0.19,
+          "25th": 0.1538,
+          "75th": 0.2312,
+          "min": 0.09,
+          "min_ind": 30,
+          "max": 0.315,
+          "max_ind": 26
+        },
+        "jaccard_score": {
+          "mean": 0.6855,
+          "25th": 0.6289,
+          "75th": 0.7377,
+          "min": 0.533,
+          "min_ind": 34,
+          "max": 0.8369,
+          "max_ind": 30
+        },
+        "accuracy_score": {
+          "mean": 0.81,
+          "25th": 0.7688,
+          "75th": 0.8462,
+          "min": 0.685,
+          "min_ind": 26,
+          "max": 0.91,
+          "max_ind": 30
+        },
+        "recall_score": {
+          "mean": 0.8104,
+          "25th": 0.7736,
+          "75th": 0.8479,
+          "min": 0.6911,
+          "min_ind": 26,
+          "max": 0.9129,
+          "max_ind": 30
+        },
+        "precision_score": {
+          "mean": 0.8108,
+          "25th": 0.77,
+          "75th": 0.848,
+          "min": 0.6919,
+          "min_ind": 34,
+          "max": 0.9101,
+          "max_ind": 30
+        }
+      },
+      "time": {
+        "mean": 0.0611,
+        "25th": 0.053,
+        "75th": 0.069,
+        "min": 0.036,
+        "min_ind": 14,
+        "max": 0.095,
+        "max_ind": 92
+      }
+    },
+    "LogisticRegression": {
+      "clustering": {
+        "adjusted_mutual_info_score": {
+          "mean": 0.579,
+          "25th": 0.4948,
+          "75th": 0.6683,
+          "min": 0.3565,
+          "min_ind": 0,
+          "max": 0.7886,
+          "max_ind": 10
+        },
+        "adjusted_rand_score": {
+          "mean": 0.5966,
+          "25th": 0.5054,
+          "75th": 0.7022,
+          "min": 0.3366,
+          "min_ind": 0,
+          "max": 0.8156,
+          "max_ind": 10
+        },
+        "completeness_score": {
+          "mean": 0.5865,
+          "25th": 0.5037,
+          "75th": 0.674,
+          "min": 0.3693,
+          "min_ind": 0,
+          "max": 0.7919,
+          "max_ind": 10
+        },
+        "fowlkes_mallows_score": {
+          "mean": 0.6974,
+          "25th": 0.629,
+          "75th": 0.7764,
+          "min": 0.5039,
+          "min_ind": 0,
+          "max": 0.8613,
+          "max_ind": 10
+        },
+        "homogeneity_score": {
+          "mean": 0.5857,
+          "25th": 0.5025,
+          "75th": 0.6734,
+          "min": 0.3653,
+          "min_ind": 0,
+          "max": 0.7924,
+          "max_ind": 10
+        },
+        "v_measure_score": {
+          "mean": 0.5861,
+          "25th": 0.5032,
+          "75th": 0.6739,
+          "min": 0.3673,
+          "min_ind": 0,
+          "max": 0.7921,
+          "max_ind": 10
+        }
+      },
+      "classification": {
+        "f1_score": {
+          "mean": 0.8194,
+          "25th": 0.7759,
+          "75th": 0.8717,
+          "min": 0.676,
+          "min_ind": 0,
+          "max": 0.9243,
+          "max_ind": 57
+        },
+        "hamming_loss": {
+          "mean": 0.1791,
+          "25th": 0.125,
+          "75th": 0.225,
+          "min": 0.075,
+          "min_ind": 10,
+          "max": 0.325,
+          "max_ind": 0
+        },
+        "jaccard_score": {
+          "mean": 0.7026,
+          "25th": 0.6394,
+          "75th": 0.7766,
+          "min": 0.5154,
+          "min_ind": 0,
+          "max": 0.8593,
+          "max_ind": 57
+        },
+        "accuracy_score": {
+          "mean": 0.8209,
+          "25th": 0.775,
+          "75th": 0.875,
+          "min": 0.675,
+          "min_ind": 0,
+          "max": 0.925,
+          "max_ind": 10
+        },
+        "recall_score": {
+          "mean": 0.8212,
+          "25th": 0.7792,
+          "75th": 0.8735,
+          "min": 0.6734,
+          "min_ind": 0,
+          "max": 0.9267,
+          "max_ind": 57
+        },
+        "precision_score": {
+          "mean": 0.8216,
+          "25th": 0.7774,
+          "75th": 0.8727,
+          "min": 0.6901,
+          "min_ind": 0,
+          "max": 0.9244,
+          "max_ind": 10
+        }
+      },
+      "time": {
+        "mean": 0.0269,
+        "25th": 0.02,
+        "75th": 0.0302,
+        "min": 0.012,
+        "min_ind": 70,
+        "max": 0.078,
+        "max_ind": 50
+      }
+    },
+    "GaussianNB": {
+      "clustering": {
+        "adjusted_mutual_info_score": {
+          "mean": 0.5398,
+          "25th": 0.4728,
+          "75th": 0.6063,
+          "min": 0.3329,
+          "min_ind": 76,
+          "max": 0.7684,
+          "max_ind": 10
+        },
+        "adjusted_rand_score": {
+          "mean": 0.5504,
+          "25th": 0.4658,
+          "75th": 0.6147,
+          "min": 0.3307,
+          "min_ind": 76,
+          "max": 0.797,
+          "max_ind": 10
+        },
+        "completeness_score": {
+          "mean": 0.5486,
+          "25th": 0.4819,
+          "75th": 0.614,
+          "min": 0.3436,
+          "min_ind": 76,
+          "max": 0.7726,
+          "max_ind": 10
+        },
+        "fowlkes_mallows_score": {
+          "mean": 0.6632,
+          "25th": 0.5992,
+          "75th": 0.7109,
+          "min": 0.4973,
+          "min_ind": 76,
+          "max": 0.8474,
+          "max_ind": 10
+        },
+        "homogeneity_score": {
+          "mean": 0.5465,
+          "25th": 0.4813,
+          "75th": 0.6106,
+          "min": 0.3444,
+          "min_ind": 76,
+          "max": 0.772,
+          "max_ind": 10
+        },
+        "v_measure_score": {
+          "mean": 0.5475,
+          "25th": 0.4816,
+          "75th": 0.6129,
+          "min": 0.344,
+          "min_ind": 76,
+          "max": 0.7723,
+          "max_ind": 10
+        }
+      },
+      "classification": {
+        "f1_score": {
+          "mean": 0.795,
+          "25th": 0.7567,
+          "75th": 0.829,
+          "min": 0.6468,
+          "min_ind": 34,
+          "max": 0.9117,
+          "max_ind": 69
+        },
+        "hamming_loss": {
+          "mean": 0.2028,
+          "25th": 0.1688,
+          "75th": 0.2412,
+          "min": 0.085,
+          "min_ind": 10,
+          "max": 0.335,
+          "max_ind": 34
+        },
+        "jaccard_score": {
+          "mean": 0.6685,
+          "25th": 0.6121,
+          "75th": 0.7123,
+          "min": 0.4905,
+          "min_ind": 34,
+          "max": 0.841,
+          "max_ind": 10
+        },
+        "accuracy_score": {
+          "mean": 0.7972,
+          "25th": 0.7588,
+          "75th": 0.8312,
+          "min": 0.665,
+          "min_ind": 34,
+          "max": 0.915,
+          "max_ind": 10
+        },
+        "recall_score": {
+          "mean": 0.798,
+          "25th": 0.7629,
+          "75th": 0.8306,
+          "min": 0.6639,
+          "min_ind": 34,
+          "max": 0.914,
+          "max_ind": 69
+        },
+        "precision_score": {
+          "mean": 0.8007,
+          "25th": 0.7607,
+          "75th": 0.8371,
+          "min": 0.6731,
+          "min_ind": 28,
+          "max": 0.9151,
+          "max_ind": 69
+        }
+      },
+      "time": {
+        "mean": 0.0018,
+        "25th": 0.001,
+        "75th": 0.002,
+        "min": 0.0006,
+        "min_ind": 0,
+        "max": 0.006,
+        "max_ind": 32
+      }
+    }
+  }
+}
