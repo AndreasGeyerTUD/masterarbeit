@@ -166,8 +166,8 @@ credit:
     target: "default",
     drop_columns: null,
     kaggle_name: "ahmettezcantekin/beginner-datasets",
-    save_name: "concrete",
-    files: [ "concrete.csv" ]
+    save_name: "credit",
+    files: [ "credit.csv" ]
   }
 diabetes:
   {

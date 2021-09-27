@@ -1,15 +1,14 @@
+import multiprocessing as mp
 from pathlib import Path
 from typing import List
 
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
-from sklearn.datasets import load_boston, load_iris, load_diabetes, load_wine, \
-    load_breast_cancer
+from sklearn.datasets import load_boston, load_iris, load_diabetes, load_wine, load_breast_cancer
 from tqdm import tqdm
 
 from prepare_dataset import read_and_parse_dataset
-import multiprocessing as mp
 
 
 def split_columns_for_plot(columns: list) -> list[list]:
@@ -103,7 +102,7 @@ def sklearn_datasets():
 
 
 def seaborn_datasets():
-    datasets = ["car_crashes", "penguins", "exercise", "mpg"]
+    datasets = ["car_crashes", "penguins", "mpg"]
 
     for dataset in datasets:
         data = sns.load_dataset(dataset)
@@ -161,8 +160,8 @@ def split_list(a_list, wanted_parts=1):
 
 
 if __name__ == "__main__":
-    # sklearn_datasets()
-    # seaborn_datasets()
+    sklearn_datasets()
+    seaborn_datasets()
 
     path = Path("uncleaned_datasets/")
     files = list(path.glob("*"))
