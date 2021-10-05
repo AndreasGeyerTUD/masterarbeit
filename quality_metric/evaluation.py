@@ -111,8 +111,8 @@ def _main(result_path: str, save_path: str, plot: bool = False):
                              "Mini-Batch K-Means", "Mean-Shift", "OPTICS", "Spectral Clustering", "Gaussian Mixture",
                              "KNN", "Decision Tree", "Random Forest", "SVM", "Logistic Regression", "Naive Bayes"]
                 latex.rename(index={l1: l2 for l1, l2 in zip(latex.index, new_index)}, inplace=True)
-                latex.to_latex(file, header=True, index=True, caption="j", label="tabel:{}".format(j),
-                               column_format="|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|", position="tb", na_rep="-")
+                latex.to_latex(file, header=True, index=True, caption=str(j), label="tabel:{}".format(j),
+                               column_format="lrrrrrrrrrrrrrr", position="tb", na_rep="-")
 
             j += 1
             results_list = []
