@@ -129,6 +129,11 @@ def approximate_hypercube_iou(hs: List[Tuple[float, List[float]]], new_hs: Tuple
     :param m_rel: The dimension of the Hypercube.
     :return: A list of IoUs in the same order as hs. So, for every element of hs there is the IoU with new_hs.
     """
+
+    # TODO: umschreiben so dass new_hs die random Punkte enthält -> die müssen dadurch nur einmal erzeugt werden und
+    #  dann wird für jeden Punkt getestet in welchen hs er noch liegt. -> dadurch Punkte nur einmal erzeugen und
+    #  Volumen nur einmal berechnen
+
     if hs is None or len(hs) == 0 or not hs:
         return [-1]
 
@@ -310,11 +315,12 @@ def generate_small_hypershapes(m_rel: int, n_classes: int, max_r: float, min_r: 
                 for idx, (sha, prob) in enumerate(hypershapes):
                     if rand < (sum([hypershapes[i][1] for i in range(idx)]) + prob):
                         shape = sha
+                        break
 
                 if shape in ["cubes", "spheres"]:
-                    c, r = generate_small_hypercube(m_rel, max_r, min_r) if hypershapes == "cubes" else \
+                    c, r = generate_small_hypercube(m_rel, max_r, min_r) if shape == "cubes" else \
                         generate_small_hypersphere(m_rel, max_r, min_r)
-                    hs[i][j] = {"shape": hypershapes,
+                    hs[i][j] = {"shape": shape,
                                 "center": c,
                                 "radius": r
                                 }
@@ -730,7 +736,7 @@ def generate(n_samples: int, shapes: Union[str, List[Tuple[str, float]]], m_rel:
              n_classes: int, n_clusters_per_class: int = 1, categorical_variabels: List[int] = None,
              max_r: float = None, min_r: float = None, random_points: float = 0, noise_levels: List[float] = None,
              name: str = "Dataset test", random_state: int = None, points_distribution: str = None,
-             save_dir: str = None, singlelabel: bool = False, iou_threshold: Union[float, List[float]] = None,
+             save_dir: str = None, singlelabel: bool = True, iou_threshold: Union[float, List[float]] = None,
              mov_vectors: Union[List[List[float]], str] = None) \
         -> Tuple[pd.DataFrame, pd.DataFrame, List[pd.DataFrame]]:
     """
@@ -768,7 +774,7 @@ def generate(n_samples: int, shapes: Union[str, List[Tuple[str, float]]], m_rel:
     """
 
     if min_r is None:
-        min_r = round(((n_classes / 10) + 1) / n_classes, 1)
+        min_r = round(((n_classes / 10) + 1) / n_classes, 2)
     if max_r is None:
         max_r = min(min_r * 2, 0.8)
 
@@ -815,6 +821,8 @@ def generate(n_samples: int, shapes: Union[str, List[Tuple[str, float]]], m_rel:
         if round(sum(probs), 1) != 1:
             raise ValueError("The probabilities for the shapes must sum up to 1!")
 
+    # Todo: check for all parameters on sanity -> iou threshold is missing
+
     random.seed(random_state)
     np.random.seed(random_state)
 
@@ -827,7 +835,6 @@ def generate(n_samples: int, shapes: Union[str, List[Tuple[str, float]]], m_rel:
     rp_samples = round(n_samples * random_points)
     n_samples = n_samples - rp_samples
 
-    # TODO: random label assignen und am Ende zum Datensatz hinzufügen
     rp = pd.DataFrame(np.array([np.random.rand(m_rel) for _ in range(rp_samples)]) * 2 - 1)
 
     ns = calculate_points_distribution(n_samples, n_classes, hypershapes, points_distribution)
@@ -848,10 +855,10 @@ def generate(n_samples: int, shapes: Union[str, List[Tuple[str, float]]], m_rel:
 
     dataset = move_points(dataset, mov_vectors, single_labels)
 
+    dataset, labels = merge_dataset_with_random(dataset, labels, rp, random_points_labels)
+
     if categorical_variabels is not None:
         dataset, rp = make_features_categorical(dataset, rp, categorical_variabels)
-
-    dataset, labels = merge_dataset_with_random(dataset, labels, rp, random_points_labels)
 
     dataset.rename({i: "rel{}".format(i) for i in range(m_rel)}, axis=1, inplace=True)
 
