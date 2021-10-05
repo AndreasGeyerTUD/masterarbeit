@@ -32,7 +32,7 @@ from sklearn.naive_bayes import GaussianNB
 
 import multiprocessing as mp
 from scipy.optimize import linear_sum_assignment as linear_assignment
-from generators.ml_datagen import generate
+from generators.csm_datagen import generate
 
 clustering_metrics = [adjusted_mutual_info_score, adjusted_rand_score, completeness_score, fowlkes_mallows_score,
                       homogeneity_score, v_measure_score]

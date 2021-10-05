@@ -5,7 +5,7 @@ from pathlib import Path
 import numpy as np
 from sklearn.datasets import make_classification
 from tqdm import tqdm
-import ml_datagen
+import csm_datagen
 import multiprocessing as mp
 
 
@@ -46,10 +46,10 @@ def exp_1_random_ml_datagen(random_state: int, path: str = None):
             }}
             print(dic, file=save_file)
 
-    dataset, labels, _ = ml_datagen.generate(shapes=shape, m_rel=n_informative, m_irr=n_repeated, m_red=n_redundant,
-                                             n_classes=n_classes, n_samples=n_samples, singlelabel=True,
-                                             random_state=rs, n_clusters_per_class=n_clusters_per_class,
-                                             mov_vectors=mov_vectors)
+    dataset, labels, _ = csm_datagen.generate(shapes=shape, m_rel=n_informative, m_irr=n_repeated, m_red=n_redundant,
+                                              n_classes=n_classes, n_samples=n_samples, singlelabel=True,
+                                              random_state=rs, n_clusters_per_class=n_clusters_per_class,
+                                              mov_vectors=mov_vectors)
 
     return dataset, labels
 
@@ -91,10 +91,10 @@ def exp_2_random_ml_datagen(random_state: int, path: str = None):
             }}
             print(dic, file=save_file)
 
-    dataset, labels, _ = ml_datagen.generate(shapes=shape, m_rel=n_informative, m_irr=n_repeated, m_red=n_redundant,
-                                             n_classes=n_classes, n_samples=n_samples, singlelabel=True,
-                                             random_state=rs, n_clusters_per_class=n_clusters_per_class,
-                                             mov_vectors=mov_vectors)
+    dataset, labels, _ = csm_datagen.generate(shapes=shape, m_rel=n_informative, m_irr=n_repeated, m_red=n_redundant,
+                                              n_classes=n_classes, n_samples=n_samples, singlelabel=True,
+                                              random_state=rs, n_clusters_per_class=n_clusters_per_class,
+                                              mov_vectors=mov_vectors)
 
     return dataset, labels
 
@@ -136,10 +136,10 @@ def exp_3_random_ml_datagen(random_state: int, path: str = None):
             }}
             print(dic, file=save_file)
 
-    dataset, labels, _ = ml_datagen.generate(shapes=shape, m_rel=n_informative, m_irr=n_repeated, m_red=n_redundant,
-                                             n_classes=n_classes, n_samples=n_samples, singlelabel=True,
-                                             random_state=rs, n_clusters_per_class=n_clusters_per_class,
-                                             mov_vectors=mov_vectors)
+    dataset, labels, _ = csm_datagen.generate(shapes=shape, m_rel=n_informative, m_irr=n_repeated, m_red=n_redundant,
+                                              n_classes=n_classes, n_samples=n_samples, singlelabel=True,
+                                              random_state=rs, n_clusters_per_class=n_clusters_per_class,
+                                              mov_vectors=mov_vectors)
 
     return dataset, labels
 
@@ -186,10 +186,10 @@ def exp_4_random_ml_datagen(random_state: int, path: str = None):
             }}
             print(dic, file=save_file)
 
-    dataset, labels, _ = ml_datagen.generate(shapes=shape, m_rel=n_informative, m_irr=n_repeated, m_red=n_redundant,
-                                             n_classes=n_classes, n_samples=n_samples, singlelabel=True,
-                                             random_state=rs, n_clusters_per_class=n_clusters_per_class,
-                                             mov_vectors="random", categorical_variabels=categorical_variables)
+    dataset, labels, _ = csm_datagen.generate(shapes=shape, m_rel=n_informative, m_irr=n_repeated, m_red=n_redundant,
+                                              n_classes=n_classes, n_samples=n_samples, singlelabel=True,
+                                              random_state=rs, n_clusters_per_class=n_clusters_per_class,
+                                              mov_vectors="random", categorical_variables=categorical_variables)
 
     return dataset, labels
 
@@ -237,10 +237,10 @@ def exp_5_random_ml_datagen(random_state: int, path: str = None):
             print(dic, file=save_file)
 
     if random.random() >= 0.5:
-        dataset, labels, _ = ml_datagen.generate(shapes=shape, m_rel=n_informative, m_irr=n_repeated, m_red=n_redundant,
-                                                 n_classes=n_classes, n_samples=n_samples, singlelabel=True,
-                                                 random_state=rs, n_clusters_per_class=n_clusters_per_class,
-                                                 mov_vectors="random", categorical_variabels=categorical_variables)
+        dataset, labels, _ = csm_datagen.generate(shapes=shape, m_rel=n_informative, m_irr=n_repeated, m_red=n_redundant,
+                                                  n_classes=n_classes, n_samples=n_samples, singlelabel=True,
+                                                  random_state=rs, n_clusters_per_class=n_clusters_per_class,
+                                                  mov_vectors="random", categorical_variables=categorical_variables)
     else:
         dataset, labels = make_classification(n_samples=n_samples, n_features=n_features, n_informative=n_informative,
                                               n_redundant=n_redundant, n_repeated=n_repeated,
@@ -287,10 +287,10 @@ def exp_6_random_ml_datagen(random_state: int, path: str = None):
             }}
             print(dic, file=save_file)
 
-    dataset, labels, _ = ml_datagen.generate(shapes=shape, m_rel=n_informative, m_irr=n_repeated, m_red=n_redundant,
-                                             n_classes=n_classes, n_samples=n_samples, singlelabel=True,
-                                             random_state=rs, n_clusters_per_class=n_clusters_per_class,
-                                             mov_vectors=mov_vectors)
+    dataset, labels, _ = csm_datagen.generate(shapes=shape, m_rel=n_informative, m_irr=n_repeated, m_red=n_redundant,
+                                              n_classes=n_classes, n_samples=n_samples, singlelabel=True,
+                                              random_state=rs, n_clusters_per_class=n_clusters_per_class,
+                                              mov_vectors=mov_vectors)
 
     return dataset, labels
 
@@ -335,10 +335,10 @@ def exp_7_random_ml_datagen(random_state: int, path: str = None):
             }}
             print(dic, file=save_file)
 
-    dataset, labels, _ = ml_datagen.generate(shapes=shape, m_rel=n_informative, m_irr=n_repeated, m_red=n_redundant,
-                                             n_classes=n_classes, n_samples=n_samples, singlelabel=True,
-                                             random_state=rs, n_clusters_per_class=n_clusters_per_class,
-                                             random_points=n_random_points, mov_vectors=mov_vectors)
+    dataset, labels, _ = csm_datagen.generate(shapes=shape, m_rel=n_informative, m_irr=n_repeated, m_red=n_redundant,
+                                              n_classes=n_classes, n_samples=n_samples, singlelabel=True,
+                                              random_state=rs, n_clusters_per_class=n_clusters_per_class,
+                                              random_points=n_random_points, mov_vectors=mov_vectors)
 
     return dataset, labels
 
@@ -377,10 +377,10 @@ def exp_8_random_ml_datagen(random_state: int, path: str = None):
             }}
             print(dic, file=save_file)
 
-    dataset, labels, _ = ml_datagen.generate(shapes=shape, m_rel=n_informative, m_irr=n_repeated, m_red=n_redundant,
-                                             n_classes=n_classes, n_samples=n_samples, singlelabel=True,
-                                             random_state=rs, n_clusters_per_class=n_clusters_per_class,
-                                             mov_vectors="random")
+    dataset, labels, _ = csm_datagen.generate(shapes=shape, m_rel=n_informative, m_irr=n_repeated, m_red=n_redundant,
+                                              n_classes=n_classes, n_samples=n_samples, singlelabel=True,
+                                              random_state=rs, n_clusters_per_class=n_clusters_per_class,
+                                              mov_vectors="random")
 
     return dataset, labels
 
@@ -434,11 +434,11 @@ def exp_9_random_ml_datagen(random_state: int, path: str = None):
             }}
             print(dic, file=save_file)
 
-    dataset, labels, _ = ml_datagen.generate(shapes=shape, m_rel=n_informative, m_irr=n_repeated, m_red=n_redundant,
-                                             n_classes=n_classes, n_samples=n_samples, singlelabel=True,
-                                             random_state=rs, n_clusters_per_class=n_clusters_per_class,
-                                             random_points=n_random_points, mov_vectors=mov_vectors,
-                                             categorical_variabels=categorical_variables)
+    dataset, labels, _ = csm_datagen.generate(shapes=shape, m_rel=n_informative, m_irr=n_repeated, m_red=n_redundant,
+                                              n_classes=n_classes, n_samples=n_samples, singlelabel=True,
+                                              random_state=rs, n_clusters_per_class=n_clusters_per_class,
+                                              random_points=n_random_points, mov_vectors=mov_vectors,
+                                              categorical_variables=categorical_variables)
 
 
 def random_sklearn(random_state: int, path: str = None):
@@ -484,61 +484,3 @@ def random_sklearn(random_state: int, path: str = None):
     return make_classification(n_samples=n_samples, n_features=n_features, n_informative=n_informative,
                                n_redundant=n_redundant, n_repeated=n_repeated, n_classes=n_classes,
                                n_clusters_per_class=n_clusters_per_class, random_state=rs)
-
-
-def example(number: int):
-    if number == 0:
-        ts = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-
-        for i in tqdm(range(1000)):
-            dataset, labels = random_sklearn(i, ts + "/ds.txt")
-    elif number == 1:
-        ts = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-
-        for i in tqdm(range(1000)):
-            dataset, labels = exp_1_random_ml_datagen(i, ts + "/ds.txt")
-    elif number == 2:
-        ts = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-
-        for i in tqdm(range(1000)):
-            dataset, labels = exp_2_random_ml_datagen(i, ts + "/ds.txt")
-    elif number == 3:
-        ts = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-
-        for i in tqdm(range(1000)):
-            dataset, labels = exp_3_random_ml_datagen(i, ts + "/ds.txt")
-    elif number == 4:
-        ts = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-
-        for i in tqdm(range(1000)):
-            dataset, labels = exp_4_random_ml_datagen(i, ts + "/ds.txt")
-    elif number == 5:
-        ts = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-
-        for i in tqdm(range(1000)):
-            dataset, labels = exp_5_random_ml_datagen(i, ts + "/ds.txt")
-    elif number == 6:
-        ts = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-
-        for i in tqdm(range(1000)):
-            dataset, labels = exp_6_random_ml_datagen(i, ts + "/ds.txt")
-    elif number == 7:
-        ts = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-
-        for i in tqdm(range(1000)):
-            dataset, labels = exp_7_random_ml_datagen(i, ts + "/ds.txt")
-    elif number == 8:
-        ts = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-
-        for i in tqdm(range(1000)):
-            dataset, labels = exp_8_random_ml_datagen(i, ts + "/ds.txt")
-
-
-if __name__ == "__main__":
-    pool = mp.Pool(mp.cpu_count() - 4)
-    pool.map(example, range(6, 9))
-
-    # ts = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    #
-    # for i in tqdm(range(1000)):
-    #     dataset, labels = exp_2_random_ml_datagen(i, ts + "/ds.txt")

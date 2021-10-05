@@ -5,8 +5,6 @@ from typing import Union, Tuple, Dict, List
 
 import numpy as np
 import pandas as pd
-from matplotlib import pyplot as plt
-
 from scipy.spatial.distance import euclidean
 from scipy.special import gamma, betainc
 
@@ -192,10 +190,26 @@ def is_point_inside_hypercube(point: List[float], c: List[float], r: float) -> b
 
 
 def is_point_inside_hypersphere(point: np.array, c: List[float], r: float) -> bool:
+    """
+    This method checks whether a given point is inside a given Hypersphere.
+
+    :param point: The point to check.
+    :param c: The centre-point of the Hypersphere.
+    :param r: The radius of the Hypersphere.
+    :return: Whether the point is inside or not.
+    """
     return np.linalg.norm(point - c) < r
 
 
 def is_point_inside_hypermoon(point: np.array, c: Tuple[List[float]], r: Tuple[float]) -> bool:
+    """
+    This method checks whether a given point is inside a given Hypermoon.
+
+    :param point: The point to check.
+    :param c: The centre-points of the larger and the smaller Hypersphere.
+    :param r: The radii of the larger and the smaller Hypersphere.
+    :return: Whether the point is inside or not.
+    """
     return is_point_inside_hypersphere(point, c[0], r[0]) and not is_point_inside_hypersphere(point, c[1], r[1])
 
 
@@ -234,18 +248,20 @@ def generate_small_hypershapes(m_rel: int, n_classes: int, max_r: float, min_r: 
                                hypershapes: Union[str, List[Tuple[str, float]]], n_clusters_per_class: int,
                                iou_threshold: Union[float, List[float]] = None) -> Dict[int, Dict]:
     """
-    As this generator is based on hypercubes and hyperspheres one needs to generate small hypercubes/spheres which will
-    later contain the points.
+    As this generator is based on hypershapes one needs to generate small hypershapes which will later contain the
+    points.
     Pay attention, there are 2 "while True" loops with safety-break after a high number of iterations. If these were
     triggered it might be because of bad luck. Try again a few times (maybe with a different random_state).
 
     :param m_rel: The number of relevant features to create. Is used to determine the dimensionality of the hypershape.
-    :param n_classes: The number of possible labels. For each label there is a hypershape created (overlap of shapes leads to
-        multilabel.
+    :param n_classes: The number of possible labels. For each label there is a hypershape created (overlap of shapes
+        leads to multilabel).
     :param max_r: The maximal radius for spheres or half-edge for cubes.
     :param min_r: The minimal radius for spheres or half-edge for cubes.
-    :param hypershapes: You can choose between "cubes" and "spheres" which determines whether hypercubes or hyperspheres
-        are used.
+    :param hypershapes: You can choose between "cubes", "spheres", "moons" and "mix". This determines which shape the
+        clusters will have. "mix" -> (40% hypercubes, 40% hyperspheres and 20% hypermoons)
+        Alternatively an own distribution with for example [("cubes", 0.6),("spheres", 0.2),("moons", 0.2)] is possible.
+    :param n_clusters_per_class: The number of clusters per class
     :param iou_threshold: The restrictions to apply for the IoU. If None than no restrictions are applied. If a single
         float value, than this is the upper bound of the IoU for every pairing of Hypershapes, so, no Hypershape has an
         IoU larger than this float value with any other Hypershape. If a list of floats, than this list should contain
@@ -253,8 +269,7 @@ def generate_small_hypershapes(m_rel: int, n_classes: int, max_r: float, min_r: 
         as IoU with at least one other Hypershape, so, it is possible for two Hypershapes to have no intersection, but
         it ensures that every Hypershape intersects with at least one other Hypershape. The second value is used as
         upper bound and in the same way a single float value would be applied.
-    :return: The list of hypershapes containing a tuple of the radius/half-edge and the shape center (list of m_rel
-        values)
+    :return: The dict of hypershapes containing information on the clusters.
     """
 
     def gen_moon(m_rel: int, max_r: float, min_r: float, i: int, j: int):
@@ -331,6 +346,14 @@ def generate_small_hypershapes(m_rel: int, n_classes: int, max_r: float, min_r: 
 
 
 def generate_small_hypersphere(m_rel: int, max_r: float, min_r: float) -> Tuple[List[float], float]:
+    """
+    This function generates small hyperspheres.
+
+    :param m_rel: The number of relevant features to create. Is used to determine the dimensionality of the hypersphere.
+    :param max_r: The maximal radius for spheres.
+    :param min_r: The minimal radius for spheres.
+    :return: The tuple containing centre-point and radius of the hypersphere.
+    """
     c = [0] * m_rel
     r = (random.random() * (max_r - min_r)) + min_r
 
@@ -346,6 +369,14 @@ def generate_small_hypersphere(m_rel: int, max_r: float, min_r: float) -> Tuple[
 
 
 def generate_small_hypercube(m_rel: int, max_r: float, min_r: float) -> Tuple[List[float], float]:
+    """
+    This function generates small hypercubes.
+
+    :param m_rel: The number of relevant features to create. Is used to determine the dimensionality of the hypercube.
+    :param max_r: The maximal half-edge for cubes.
+    :param min_r: The minimal half-edge for cubes.
+    :return: The tuple containing centre-point and radius of the hypercube.
+    """
     r = (random.random() * (max_r - min_r)) + min_r
     max_c = 1 - r
     min_c = - max_c
@@ -356,6 +387,14 @@ def generate_small_hypercube(m_rel: int, max_r: float, min_r: float) -> Tuple[Li
 
 
 def generate_small_hypermoons(m_rel: int, max_r: float, min_r: float) -> List[Tuple[List[float], float]]:
+    """
+    This function generates small hypermoons.
+
+    :param m_rel: The number of relevant features to create. Is used to determine the dimensionality of the hypersphere.
+    :param max_r: The maximal radius for the bigger hypersphere.
+    :param min_r: The minimal radius for the bigger hypersphere.
+    :return: The tuple containing centre-point and radius of the two hyperspheres.
+    """
     c_big, r_big = generate_small_hypersphere(m_rel, max_r, min_r)
 
     c_small = c_big + ((np.random.rand(m_rel) * (0.4 * r_big)) * random.choice([1, -1]))
@@ -365,9 +404,14 @@ def generate_small_hypermoons(m_rel: int, max_r: float, min_r: float) -> List[Tu
 
 
 def move_points(dataset: pd.DataFrame, mov_vectors: List[List[float]], labels: pd.DataFrame) -> pd.DataFrame:
-    if mov_vectors is None:
-        return dataset
+    """
+    This function transforms the clusters.
 
+    :param dataset: The dataset containing only relevant features and no noise.
+    :param mov_vectors: A list of vectors with m_rel dimensions.
+    :param labels: The singlelabels of the dataset.
+    :return: The tuple containing centre-point and radius of the two hyperspheres.
+    """
     group_dict = {}
 
     groups = labels.groupby("labels").groups
@@ -394,15 +438,15 @@ def move_point(point: np.array, mov_vector: List[float]):
 def generate_points_inside_hypershape(m_rel: int, n: int, c: Union[List[float], Tuple[List[float], List[float]]],
                                       r: Union[float, Tuple[float, float]], hypershape: str) -> List[List[float]]:
     """
-    Populating the beforehand created hypershapes (cubes and spheres) with points (evenly distributed). This function
-    populates one given hypershape. So, you have to execute it for every hypershape.
+    Populating the beforehand created hypershapes (cubes, spheres and moons) with points (uniformly distributed). This
+    function populates one given hypershape. So, you have to execute it for every hypershape.
 
     :param m_rel: The number of relevant features to create. Is used to determine the dimensionality of the points.
     :param n: The number of points to create for this hypershape.
     :param c: The center of the hypershape to populate.
     :param r: The radius/half-edge of the hypershape to populate.
-    :param hypershape: You can choose between "cubes" and "spheres" which determines whether hypercubes or hyperspheres
-        are used.
+    :param hypershape: You can choose between "cubes", "spheres" and "moons" which determines whether hypercubes,
+        hyperspheres or hypermoons are used.
     :return: A list of m_rel dimensional points for one hypershape. Every point is a list of m_rel values between -1
         and 1 (and inside of the hypershape).
     """
@@ -426,14 +470,12 @@ def generate_points_inside_hypershape(m_rel: int, n: int, c: Union[List[float], 
 
 def generate_point_inside_hypersphere(m_rel: int, c: List[float], r: float) -> List[float]:
     """
-    Populating the beforehand created hypershapes (cubes and spheres) with points (evenly distributed). This function
-    populates one given hypershape. So, you have to execute it for every hypershape.
+    Generating one point inside a given hypersphere.
 
-    :param m_rel: The number of relevant features to create. Is used to determine the dimensionality of the points.
-    :param c: The center of the hypershape to populate.
-    :param r: The radius/half-edge of the hypershape to populate.
-    :return: A list of m_rel dimensional points for one hypershape. Every point is a list of m_rel values between -1
-        and 1 (and inside of the hypershape).
+    :param m_rel: The number of relevant features to create. Is used to determine the dimensionality of the point.
+    :param c: The center of the hypersphere.
+    :param r: The radius of the hypersphere.
+    :return: A list with m_rel entries. -> A point
     """
     x = [0] * m_rel
 
@@ -455,17 +497,32 @@ def generate_point_inside_hypersphere(m_rel: int, c: List[float], r: float) -> L
 
 
 def generate_point_inside_hypercube(m_rel: int, c: List[float], r: float) -> np.array:
+    """
+    Generating one point inside a given hypercube.
+
+    :param m_rel: The number of relevant features to create. Is used to determine the dimensionality of the point.
+    :param c: The center of the hypercube.
+    :param r: The radius of the hypercube.
+    :return: A list with m_rel entries. -> A point
+    """
     return list(np.random.rand(m_rel) * r * 2 - r + np.array(c))
 
 
 def generate_point_inside_hypermoon(m_rel: int, c: Tuple[List[float], List[float]], r: Tuple[float, float]) \
         -> List[float]:
+    """
+    Generating one point inside a given hypermoon.
+
+    :param m_rel: The number of relevant features to create. Is used to determine the dimensionality of the point.
+    :param c: The centres of the larger hypersphere and of the smaller hypersphere.
+    :param r: The radii of the larger hypersphere and of the smaller hypersphere.
+    :return: A list with m_rel entries. -> A point
+    """
     c_big, c_small = c
     r_big, r_small = r
 
     x = generate_point_inside_hypersphere(m_rel, c_big, r_big)
 
-    # TODO evaluate whether stopping criterion is needed
     while is_point_inside_hypersphere(x, c_small, r_small):
         x = generate_point_inside_hypersphere(m_rel, c_big, r_big)
 
@@ -504,6 +561,13 @@ def assign_labels(dataset: pd.DataFrame, hypershapes: Dict[int, Dict], n_classes
 
 
 def assign_random_labels(dataset: pd.DataFrame, n_classes: int) -> pd.DataFrame:
+    """
+    Assigning random labels to the random points. Only when generating multilabel datasets
+
+    :param dataset: The random points.
+    :param n_classes: The number of possible labels.
+    :return: The random labels.
+    """
     labels = np.zeros(shape=(len(dataset), n_classes))
     labels = pd.DataFrame(labels, columns=["l{}".format(i) for i in range(n_classes)])
     for label in labels.values:
@@ -515,6 +579,15 @@ def assign_random_labels(dataset: pd.DataFrame, n_classes: int) -> pd.DataFrame:
 
 def merge_dataset_with_random(dataset: pd.DataFrame, labels: pd.DataFrame, random_points: pd.DataFrame,
                               random_labels: pd.DataFrame) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    """
+    Merging the noiseless dataset with the random noise points.
+
+    :param dataset: The dataset (containing only the relevant features and no noise) as pandas.DataFrame.
+    :param labels: The labels for the dataset.
+    :param random_points: The randomly generated noise points.
+    :param random_labels: The random labels for the random noise points.
+    :return: A tuple containing the dataset and the label (both with the noise).
+    """
     if len(dataset) == 0:
         return random_points, random_labels
     elif len(random_points) == 0:
@@ -629,6 +702,15 @@ def add_noise_singlelabel(labels: pd.DataFrame, noise_levels: Union[List[float],
 
 def calculate_points_distribution(n_samples: int, n_classes: int, hypershapes: Dict[int, Dict],
                                   points_distribution: str = None) -> List[int]:
+    """
+    Calculating how the points are distributed on the classes.
+
+    :param n_samples: The number of points the dataset should contain in total.
+    :param n_classes: The number of possible labels.
+    :param hypershapes: A dict containing the information for the classes and clusters. (centre-points, radii and shape)
+    :param points_distribution: A list containing the points distribution on the classes.
+    :return: A list with an entry for each class.
+    """
     if points_distribution == "uniform":
         ns = [int(n_samples / n_classes)] * n_classes
     else:
@@ -659,6 +741,15 @@ def calculate_points_distribution(n_samples: int, n_classes: int, hypershapes: D
 
 def populate_hypershapes(m_rel: int, points_distribution: List[int], hypershapes: Dict[int, Dict], n_classes: int) \
         -> pd.DataFrame:
+    """
+    Generating points inside the hypershapes.
+
+    :param m_rel: The number of relevant features the dataset should contain.
+    :param points_distribution: A list containing the points distribution on the classes.
+    :param hypershapes: A dict containing the information for the clusters. (centre-points, radii and shape)
+    :param n_classes: The number of possible labels.
+    :return: The dataset with m_rel features.
+    """
     dataset = []
 
     for cla in hypershapes.keys():
@@ -700,6 +791,16 @@ def populate_hypershapes(m_rel: int, points_distribution: List[int], hypershapes
 
 def make_features_categorical(dataset: pd.DataFrame, random_points: pd.DataFrame, c_v: List[int]) \
         -> Tuple[pd.DataFrame, pd.DataFrame]:
+    """
+    The function for changing a standard relevant feature to a categorical one.
+
+    :param dataset: The dataset of relevant dimensions with possibly transformed points.
+    :param random_points: The randomly generated noise points.
+    :param c_v: A list containing as many entries as relevant features should be converted. Each entry denotes how
+        many categories the corresponding feature will have.
+    :return: A tuple containing the changed dataset and the changed random points.
+    """
+
     already = []
 
     for feature in c_v:
@@ -732,8 +833,8 @@ def make_features_categorical(dataset: pd.DataFrame, random_points: pd.DataFrame
     return dataset, random_points
 
 
-def generate(n_samples: int, shapes: Union[str, List[Tuple[str, float]]], m_rel: int, m_irr: int, m_red: int,
-             n_classes: int, n_clusters_per_class: int = 1, categorical_variabels: List[int] = None,
+def generate(n_samples: int, shapes: Union[str, List[Tuple[str, float]]], m_rel: int, n_classes: int, m_irr: int = 0,
+             m_red: int = 0, n_clusters_per_class: int = 1, categorical_variables: List[int] = None,
              max_r: float = None, min_r: float = None, random_points: float = 0, noise_levels: List[float] = None,
              name: str = "Dataset test", random_state: int = None, points_distribution: str = None,
              save_dir: str = None, singlelabel: bool = True, iou_threshold: Union[float, List[float]] = None,
@@ -744,16 +845,22 @@ def generate(n_samples: int, shapes: Union[str, List[Tuple[str, float]]], m_rel:
 
     The dataset and the labels are saved into different csv files located at {save_dir}/{name}_{shape}_*.csv
 
-    :param shapes: You can choose between "cubes" and "spheres" which determines whether hypercubes or hyperspheres
-        are used.
+    :param n_samples: The number of points the dataset should contain.
+    :param shapes: You can choose between "cubes", "spheres", "moons" and "mix". This determines which shape the
+        clusters will have. "mix" -> (40% hypercubes, 40% hyperspheres and 20% hypermoons)
+        Alternatively an own distribution with for example [("cubes", 0.6),("spheres", 0.2),("moons", 0.2)] is possible.
     :param m_rel: The number of relevant features the dataset should contain.
+    :param n_classes: The number of possible labels.
     :param m_irr: The number of irrelevant features the dataset should contain.
     :param m_red: The number of redundant features the dataset should contain.
-    :param n_classes: The number of possible labels.
-    :param n_samples: The number of points the dataset should contain.
-    :param max_r: The maximal radius for spheres or half-edge for cubes. If not given, the default value of 0.8 is used.
-    :param min_r: The minimal radius for spheres or half-edge for cubes. If not given, the default value is calculated
-        by round(((n_classes / 10) + 1) / n_classes, 1).
+    :param n_clusters_per_class: The number of clusters in every class. Equal for every class.
+    :param categorical_variables: A list containing as many entries as relevant features should be converted. Each entry
+        denotes how many categories the corresponding feature will have.
+    :param max_r: The maximal radius for spheres and moons or half-edge for cubes. If not given, the default value is
+        calculated by min(2*min_r, 0.8).
+    :param min_r: The minimal radius for spheres and moons or half-edge for cubes. If not given, the default value is
+        calculated by round(((n_classes / 10) + 1) / n_classes, 1).
+    :param random_points: The percentage of random points (noise) to create.
     :param noise_levels: A list with the probability that the labels switch. 3 entries for example cause 3 different
         results.
     :param name: The name of the dataset. Used for the save_file.
@@ -762,13 +869,16 @@ def generate(n_samples: int, shapes: Union[str, List[Tuple[str, float]]], m_rel:
     :param points_distribution: How to distribute the number of points on the different hypershapes. Default is a
         weighted distribution based on the size of the hypershape. Other values are "uniform" for a uniform distribution.
     :param save_dir: The directory where the dataset and the labels should be saved.
-    :param iou_threshold: The restrictions to apply for the IoU. If None than no restrictions are applied. If a single
-        float value, than this is the upper bound of the IoU for every pairing of Hypershapes, so, no Hypershape has an
-        IoU larger than this float value with any other Hypershape. If a list of floats, than this list should contain
-        exactly 2 values. The first value is the lower bound which enforces every Hypershape to have at least this value
-        as IoU with at least one other Hypershape, so, it is possible for two Hypershapes to have no intersection, but
-        it ensures that every Hypershape intersects with at least one other Hypershape. The second value is used as
-        upper bound and in the same way a single float value would be applied.
+    :param singlelabel: Whether to create single- or multilabel datasets.
+    :param iou_threshold: The restrictions to apply for the IoU. Only applicable for shape="cubes" or shape="spheres".
+        If None than no restrictions are applied. If a single float value, than this is the upper bound of the IoU for
+        every pairing of Hypershapes, so, no Hypershape has an IoU larger than this float value with any other
+        Hypershape. If a list of floats, than this list should contain exactly 2 values. The first value is the lower
+        bound which enforces every Hypershape to have at least this value as IoU with at least one other Hypershape,
+        so, it is possible for two Hypershapes to have no intersection, but it ensures that every Hypershape intersects
+        with at least one other Hypershape. The second value is used as upper bound and in the same way a single float
+        value would be applied.
+    :param mov_vectors: Either the string "random", or a list of vectors with m_rel dimensions or None.
     :return: A tuple containing the created dataset, the corresponding labels (without noise) and a list containing the
         noisy labels (one pandas.DataFrame of labels for every noise level).
     """
@@ -790,9 +900,9 @@ def generate(n_samples: int, shapes: Union[str, List[Tuple[str, float]]], m_rel:
         raise ValueError("n_clusters_per_class (the number of clusters per label) must be larger than 0!")
     if n_samples <= 0:
         raise ValueError("n_samples (the number of samples) must be larger than 0!")
-    if categorical_variabels is not None and len(categorical_variabels) > m_rel:
+    if categorical_variables is not None and len(categorical_variables) > m_rel:
         raise ValueError(
-            "There cannot be more categorical_variabels than relevant features (m_rel)! (len(categorical_variabels) <= m_rel)")
+            "There cannot be more categorical_variables than relevant features (m_rel)! (len(categorical_variables) <= m_rel)")
     if max_r <= 0:
         raise ValueError("max_r (the maximum radius) must be larger than 0!")
     if min_r <= 0:
@@ -821,7 +931,15 @@ def generate(n_samples: int, shapes: Union[str, List[Tuple[str, float]]], m_rel:
         if round(sum(probs), 1) != 1:
             raise ValueError("The probabilities for the shapes must sum up to 1!")
 
-    # Todo: check for all parameters on sanity -> iou threshold is missing
+    if isinstance(iou_threshold, float):
+        if not (0 <= iou_threshold <= 1):
+            raise ValueError("When passing iou_threshold as float, 0 <= iou_threshold <= 1 is needed!")
+    elif isinstance(iou_threshold, list):
+        if len(iou_threshold) != 2:
+            raise ValueError("When passing iou_threshold as list it needs to contain exactly 2 float values!")
+        elif not (0 <= iou_threshold[0] <= iou_threshold[1] <= 1):
+            raise ValueError(
+                "When passing iou_threshold as list the first value must be smaller than the second and both must be betweeen 0 and 1!")
 
     random.seed(random_state)
     np.random.seed(random_state)
@@ -853,12 +971,13 @@ def generate(n_samples: int, shapes: Union[str, List[Tuple[str, float]]], m_rel:
         random_points_labels = pd.DataFrame([random.randrange(0, n_classes) for _ in range(len(rp))],
                                             columns=["labels"])
 
-    dataset = move_points(dataset, mov_vectors, single_labels)
+    if mov_vectors is not None:
+        dataset = move_points(dataset, mov_vectors, single_labels)
+
+    if categorical_variables is not None:
+        dataset, rp = make_features_categorical(dataset, rp, categorical_variables)
 
     dataset, labels = merge_dataset_with_random(dataset, labels, rp, random_points_labels)
-
-    if categorical_variabels is not None:
-        dataset, rp = make_features_categorical(dataset, rp, categorical_variabels)
 
     dataset.rename({i: "rel{}".format(i) for i in range(m_rel)}, axis=1, inplace=True)
 
@@ -889,101 +1008,3 @@ def generate(n_samples: int, shapes: Union[str, List[Tuple[str, float]]], m_rel:
                 noise_level.to_csv(file, index=False)
 
     return dataset, labels, noisy_labels
-
-
-def plot_sl(dataset, labels):
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
-    x = dataset["rel0"]
-    y = dataset["rel1"]
-    plt.xlim(-2, 2)
-    plt.ylim(-2, 2)
-    ax.set_aspect('equal', adjustable='box')
-    plt.scatter(x, y, c=labels.values)
-    plt.show()
-
-
-if __name__ == "__main__":
-    # dataset, labels, noisy_labels = generate("cubes", 4, 3, 2, 3, 100, None, None, [0.1, 0.2, 0.5], "Test", 0, None,
-    #                                          "ml_datagen")
-    #
-    # dataset, labels, noisy_labels = generate("spheres", 4, 3, 2, 3, 100, None, None, [], "Test", 0, None,
-    #                                          "ml_datagen")
-    #
-    # dataset, labels, noisy_labels = generate("cubes", 2, 0, 0, 5, 10000, 0.4, 0.2, [0.1, 0.2, 0.5], "Test", 0, None,
-    #                                          "ml_datagen", singlelabel=True)
-    #
-    # dataset, labels, noisy_labels = generate("spheres", 2, 0, 0, 5, 10000, 0.4, 0.2, [], "Test", 0, None,
-    #                                          "ml_datagen", singlelabel=True)
-    #
-    #
-    # dataset, labels, noisy_labels = generate(38900, "spheres", 24, 4, 0, 18, 4, [7], None, None, 0.3, None, "test", 50494,
-    #                                          None, "ml_datagen", singlelabel=True, iou_threshold=None,
-    #                                          mov_vectors=None)
-
-    # dataset, labels, noisy_labels = generate("spheres", 4, 4, 0, 18, 38900, None, None, None, "Test", 50494, None,
-    #                                          "ml_datagen", singlelabel=True, iou_threshold=None,
-    #                                          mov_vectors=None)
-
-    # dataset, labels, noisy_labels = generate(10000, "cubes", 2, 0, 0, 5, 2, None, 0.4, 0.2, 0, None, "Test", 2, None,
-    #                                          "ml_datagen", singlelabel=True)
-    #
-    # plot_sl(dataset, labels)
-
-    # dataset, labels, noisy_labels = generate(10000, "cubes", 2, 0, 0, 5, 2, None, 0.4, 0.2, 0, None, "Test", 2, None,
-    #                                          "ml_datagen", singlelabel=True, iou_threshold=0.3)
-    #
-    # plot_sl(dataset, labels)
-    #
-    # dataset, labels, noisy_labels = generate(10000, "cubes", 2, 0, 0, 5, 2, None, 0.4, 0.2, 0, None, "Test", 2, None,
-    #                                          "ml_datagen", singlelabel=True, iou_threshold=[0.1, 0.4])
-    #
-    # plot_sl(dataset, labels)
-
-    # dataset, labels, noisy_labels = generate(10000, "spheres", 2, 0, 0, 5, 2, None, 0.4, 0.2, 0, None, "Test", 2,
-    #                                          None,
-    #                                          "ml_datagen", singlelabel=True)
-    #
-    # plot_sl(dataset, labels)
-
-    # dataset, labels, noisy_labels = generate(10000, "spheres", 2, 0, 0, 5, 2, None, 0.4, 0.2, 0, None, "Test", 2,
-    #                                          None,
-    #                                          "ml_datagen", singlelabel=True, iou_threshold=0.3)
-    #
-    # plot_sl(dataset, labels)
-    #
-    # dataset, labels, noisy_labels = generate(10000, "spheres", 2, 0, 0, 5, 2, None, 0.4, 0.2, 0, None, "Test", 2,
-    #                                          None,
-    #                                          "ml_datagen", singlelabel=True, iou_threshold=[0.1, 0.4])
-    #
-    # plot_sl(dataset, labels)
-
-    dataset, labels, noisy_labels = generate(10000, "cubes", 2, 0, 0, 5, 2, None, 0.4, 0.2, 0, None, "Test", 2, None,
-                                             "ml_datagen", singlelabel=True, mov_vectors=np.random.rand(20, 2))
-
-    plot_sl(dataset, labels)
-
-    # dataset, labels, noisy_labels = generate(10000, "moons", 2, 0, 0, 5, 2, None, 0.4, 0.2, 0, None, "Test", 2, None,
-    #                                          "ml_datagen", singlelabel=True, iou_threshold=0.3)
-    #
-    # plot_sl(dataset, labels)
-    #
-    # dataset, labels, noisy_labels = generate(10000, "moons", 2, 0, 0, 5, 2, None, 0.4, 0.2, 0, None, "Test", 2, None,
-    #                                          "ml_datagen", singlelabel=True, iou_threshold=[0.1, 0.4])
-    #
-    # plot_sl(dataset, labels)
-
-    # dataset, labels, noisy_labels = generate(10000, "mix", 2, 0, 0, 5, 2, None, 0.3, 0.1, 0, None, "Test", 2, None,
-    #                                          "ml_datagen", singlelabel=True)
-    #
-    # plot_sl(dataset, labels)
-
-    # dataset, labels, noisy_labels = generate(10000, "mix", 2, 0, 0, 5, 2, None, 0.4, 0.2, 0, None, "Test", 2, None,
-    #                                          "ml_datagen", singlelabel=True, iou_threshold=0.3)
-    #
-    # plot_sl(dataset, labels)
-    #
-    # dataset, labels, noisy_labels = generate(10000, "mix", 2, 0, 0, 5, 2, None, 0.4, 0.2, 0, None, "Test", 2, None,
-    #                                          "ml_datagen", singlelabel=True, iou_threshold=[0.1, 0.4])
-    #
-    # plot_sl(dataset, labels)

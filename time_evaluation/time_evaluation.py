@@ -2,7 +2,7 @@ import timeit
 import json
 
 from sklearn.datasets import make_classification, make_blobs
-from generators.ml_datagen import generate
+from generators.csm_datagen import generate
 
 
 if __name__ == "__main__":

@@ -1,7 +1,7 @@
 import pandas as pd
 from sklearn.datasets import make_classification, make_moons, make_blobs, make_circles, make_regression
 import matplotlib.pyplot as plt
-from generators.ml_datagen import generate
+from generators.csm_datagen import generate
 import seaborn as sns
 
 import multiprocessing as mp

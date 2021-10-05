@@ -7,7 +7,7 @@ from scipy import stats
 from sklearn.datasets import make_classification, make_blobs
 from tqdm import tqdm
 
-from generators.ml_datagen import generate
+from generators.csm_datagen import generate
 
 
 def _round(matrix: np.array, res: int):
